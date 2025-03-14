@@ -10,7 +10,7 @@ from errorSchema import *
 from schema import *
 from sqlalchemy import desc
 
-UPLOAD_FOLDER = "backend/image"
+UPLOAD_FOLDER = "backend/bd_image"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 info = Info(title="Minha API de Amigurumi", version="1.0.0", description="API para gerenciar amigurumis, receitas, imagens e materiais.")
@@ -114,8 +114,6 @@ def add_foundation_list():
 def update_foundation_list():
     data = request.get_json()
     amigurumi_id = int(data.get('amigurumi_id'))
-
-    print(data)
 
     amigurumi = FoundationList.query.get(amigurumi_id)  
 
