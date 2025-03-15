@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template,redirect
+from flask import request, jsonify, render_template,redirect, send_from_directory
 import requests
 from flask_cors import CORS
 from database import db
@@ -258,7 +258,6 @@ def delete_stichbook_line():
 
 
 #-----------------------------------API Image Table -------------------#
-
 @app.get('/image', tags=[image_tag], responses={"200": ImageSchema_All, "404":ErrorResponse})  # Buscar todas as imagens
 def get_all_image():
     amigurumi_images = Image.query.order_by(desc(Image.main_image)).all()
