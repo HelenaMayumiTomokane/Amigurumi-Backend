@@ -8,7 +8,7 @@ import os
 from flask_openapi3 import OpenAPI, Info, Tag
 from errorSchema import *
 from schema import *
-from sqlalchemy import desc
+from sqlalchemy import desc, cast, Integer
 
 UPLOAD_FOLDER = "backend/bd_image"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -30,7 +30,7 @@ CORS(app)
 
 
 #----------------------------------- Criar Rotas ------------------------------#
-@app.route('/<page>')
+@app.get('/<page>')
 def render_page(page):
     try:
         return render_template(f'{page}.html')
@@ -158,9 +158,9 @@ def delete_foundation_list():
 @app.get('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404":ErrorResponse}) #Buscar uma receita
 def get_all_stichbook():
     amigurumi_stiches = StitchBook.query.order_by(
-        StitchBook.amigurumi_id, 
-        StitchBook.line_id, 
-        StitchBook.element
+        cast(StitchBook.amigurumi_id, Integer).asc(),
+        StitchBook.element.asc(),
+       cast(StitchBook.number_row, Integer).asc()
     ).all() 
 
     result = [
@@ -233,7 +233,7 @@ def delete_stichbook_all():
     db.session.commit()
 
     return jsonify({
-        "message": f"Todas as receitas do Amigurumi com amigurumi_id '{amigurumi_id}' removidas com sucesso!",
+        "message": f"Todas as receitas do Amigurumi com amigurumi_id '{amigurumi_id}' foram removidas com sucesso!",
     })
 
 
