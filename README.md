@@ -1,6 +1,6 @@
 # 🧵 Backend: Amigurumi
 
-🚀 Uma API para armazenar e gerenciar receitas de amigurumi.
+🚀 Uma código para armazenar e gerenciar receitas de amigurumi.
 
 ## 📌 Funcionalidades
 
