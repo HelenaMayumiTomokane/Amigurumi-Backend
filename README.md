@@ -16,25 +16,25 @@
 ---
 
 ## 📥 Instalação e Execução
-```sh
+
 
 1. Clone o repositório com o git 
-**clone https://github.com/HelenaMayumiTomokane/Amigurumi-Backend**
+```sh **clone https://github.com/HelenaMayumiTomokane/Amigurumi-Backend** ```sh
 
 2. Se desejar, faça o dowload e Ative o Ambiente Virtual
     2.1 Criar um Ambiente Virtual
-    **py -m venv venv**
+    ```sh **py -m venv venv** ```sh
 
     2.2 Ativar o Ambiente Virtual 
-    **venv\Scripts\Activate**
+    ```sh **venv\Scripts\Activate** ```sh
 
 3. Faça o dowload dos arquivos necessáros
-**pip install -r requirements.txt**
+```sh **pip install -r requirements.txt** ```sh
 
 4. Execulte o código para rodar o Backend
-**python backend/__init__.py**
+```sh **python backend/__init__.py** ```sh
 
 5. Para parar a execução
-**Ctrl + C**
+```sh **Ctrl + C** ```sh
 
 
