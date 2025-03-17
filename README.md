@@ -20,6 +20,7 @@
 1. Clone o repositório com o git => ``` clone https://github.com/HelenaMayumiTomokane/Amigurumi-Backend ```
 
 2. Se desejar, faça o dowload e Ative o Ambiente Virtual
+
     2.1 Criar um Ambiente Virtual => ``` py -m venv venv ```
 
     2.2 Ativar o Ambiente Virtual => ``` venv\Scripts\Activate ```
