@@ -329,29 +329,33 @@ def delete_image_line():
     })
 
 
-
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.post('/image', tags=[image_tag], responses={"200": ImageSchema_All, "404": ErrorResponse})
 def add_image():
-    data = request.get_json()
+    data = request.form
+    data = data.to_dict()
 
-    amigurumi_id = data.get('amigurumi_id')
+    amigurumi_id = data.get("amigurumi_id")
     amigurumi = FoundationList.query.get(amigurumi_id)
+
+    main_image = True if str(data.get("main_image")).lower() == "true" else False
+    data["main_image"] = main_image    
+
+    image_route = request.files.get('image_route')
+    if not image_route:
+        return jsonify({"error": "Imagem não fornecida"}), 400
 
     if not amigurumi:
         return jsonify({"error": "amigurumi_id não encontrado"}), 404
 
-    image_route = data.get('image_route')
+    
     if not image_route:
         return jsonify({"error": "A URL da imagem (image_route) é obrigatória"}), 400
 
-    try:
-        response = requests.get(image_route)
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        return jsonify({"error": f"Erro ao baixar a imagem: {str(e)}"}), 400
-
-    if data.get('main_image', False):  
+    if main_image:  
         Image.query.filter_by(amigurumi_id=amigurumi_id, main_image=True).update({"main_image": False})
         db.session.commit()
 
@@ -362,10 +366,10 @@ def add_image():
     image_id = new_image.image_id
     unique_name = f"image_id_{image_id}.png" 
     file_path = os.path.join(UPLOAD_FOLDER, unique_name)
+    
+    image_route.save(file_path)
 
-    with open(file_path, "wb") as file:
-        file.write(response.content)
-
+    new_image.main_image = main_image
     new_image.image_route = unique_name
     db.session.commit()
 
