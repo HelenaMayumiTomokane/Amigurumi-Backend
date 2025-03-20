@@ -159,8 +159,7 @@ def delete_foundation_list():
 def get_all_stichbook():
     amigurumi_stiches = StitchBook.query.order_by(
         cast(StitchBook.amigurumi_id, Integer).asc(),
-        StitchBook.element.asc(),
-       cast(StitchBook.number_row, Integer).asc()
+        cast(StitchBook.element_order, Integer).asc()
     ).all() 
 
     result = [
@@ -169,6 +168,7 @@ def get_all_stichbook():
     ]
 
     return jsonify(result)
+
 
 
 
@@ -474,4 +474,88 @@ def delete_material_list_line():
 
     return jsonify({
         "message": f"Material '{amigurumi.material_list_id}' foi removido com sucesso!",
+    })
+
+
+
+
+#-----------------------------------API StichBook Sequence Table------------------------#
+@app.get('/stitchbook_sequence', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse}) #Buscar uma receita
+def get_all_stichbook():
+    amigurumi_stiches = StitchBookSequence.query.order_by(
+        cast(StitchBookSequence.amigurumi_id, Integer).asc(),
+       cast(StitchBookSequence.element_order, Integer).asc()
+    ).all() 
+
+    result = [
+        {key: value for key, value in amigurumi.__dict__.items() if not key.startswith('_')}
+        for amigurumi in amigurumi_stiches
+    ]
+
+    return jsonify(result)
+
+
+
+@app.post('/stitchbook_sequence', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse}) # Imputar 1 amigurumi por vez
+def add_stichbook_sequence():
+    data = request.get_json()
+
+    amigurumi_id = data.get('amigurumi_id')
+
+    amigurumi = FoundationList.query.get(amigurumi_id)
+    if not amigurumi:
+        return jsonify({"error": "Amigurumi não cadastrado"}), 404
+
+    new_receita = StitchBookSequence(**data)
+    db.session.add(new_receita)
+    db.session.commit()
+
+    return jsonify({
+        "message": f"Linha a adicionada com sucesso!",
+        "amigurumi_id": amigurumi.amigurumi_id,
+        "element_id": new_receita.element_id,
+    })
+
+
+
+
+@app.put('/stitchbook_sequence/element_id', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse}) #Atualizar um amigurumi por ID
+def update_stichbook_sequence_element():
+    data = request.get_json()
+    element_id = int(data.get('element_id'))
+
+    elementID = StitchBookSequence.query.get(element_id)  
+
+    if not elementID:
+        return jsonify({"error": "Elemento não encontrado"}), 404
+
+    for key, value in data.items():
+        if hasattr(elementID, key):
+            setattr(elementID, key, value)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": f"Linha '{elementID.element_id}' atualizada com sucesso!",
+    })
+
+
+
+
+@app.delete('/stitchbook_sequence/element_id', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_ElementID, "404":ErrorResponse}) #Remover totalmente uma receita amigurumis
+def delete_stichbook_sequence_elementId():
+    data = request.get_json()
+    element_id = int(data.get('element_id'))
+    element_ids = StitchBookSequence.query.filter(StitchBookSequence.element_id == element_id).all()
+
+    if not element_ids:
+        return jsonify({"error": "Amigurumi não encontrado"}), 404
+
+    for element_id in element_ids:
+        db.session.delete(element_id)
+    
+    db.session.commit()
+
+    return jsonify({
+        "message": f"Element_id '{element_id}' foi removido com sucesso!",
     })

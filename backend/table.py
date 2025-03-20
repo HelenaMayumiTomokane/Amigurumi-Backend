@@ -58,10 +58,25 @@ class StitchBook(db.Model):
     line_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=False)
     observation = db.Column(db.String, nullable=False)
-    element = db.Column(db.String(100), nullable=False)
+    element_id = db.Column(db.Integer, db.ForeignKey('stitchbook_sequence.element_id'), nullable=False)
     number_row = db.Column(db.Integer, nullable=False)
     colour = db.Column(db.Integer, nullable=False)
     stich_sequence = db.Column(db.String, nullable=False)
+
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
+
+
+class StitchBookSequence(db.Model):
+    __tablename__ = 'stitchbook_sequence'
+
+    element_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=False)
+    element_order = db.Column(db.Integer, nullable=False)
+    element_name = db.Column(db.String, nullable=False)
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():

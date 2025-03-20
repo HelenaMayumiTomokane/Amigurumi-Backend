@@ -147,3 +147,33 @@ def StitchBook_LineID(model_class):
     return StitchBookLineID
 
 StitchBookSchema_LineID = StitchBook_LineID(StitchBook)
+
+
+
+
+#--------------------------------- StitchBook Sequence Table ---------------------------------------------#
+def StitchBookSequence_All(model_class):
+    columns = inspect(model_class).c
+    annotations = {}
+    
+    for column in columns:
+        column_type = column.type.python_type  
+        
+        if column.nullable:
+            column_type = Optional[column_type]  
+        
+        annotations[column.name] = (column_type, ...)
+ 
+    return create_model(f"{model_class.__name__}Schema", **annotations)
+
+StitchBookSequenceSchema_All = StitchBook_All(StitchBookSequence)
+
+
+
+def StitchBook_ElementID(model_class):
+    class StitchBookElementID(BaseModel):
+        element_id: int
+        
+    return StitchBookElementID
+
+StitchBookSequenceSchema_ElementID = StitchBook_ElementID(StitchBookSequence)
