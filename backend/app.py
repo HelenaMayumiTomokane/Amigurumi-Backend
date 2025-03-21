@@ -395,6 +395,38 @@ def add_image():
 
 
 
+@app.put('/image/image_id', tags=[image_tag], responses={"200": ImageSchema_All, "404": ErrorResponse})
+def update_image():
+    data = request.get_json()
+
+    image_id = int(data.get('image_id'))
+    amigurumi_id = int(data.get('amigurumi_id'))
+    main_image = str(data.get("main_image", "false")).lower() == "true"
+
+    # Se for a imagem principal, desativa outras imagens principais do mesmo amigurumi
+    if main_image:  
+        Image.query.filter_by(amigurumi_id=amigurumi_id, main_image=True).update({"main_image": False})
+        db.session.commit()
+
+    image_obj = Image.query.get(image_id)
+
+    if not image_obj:
+        return jsonify({"error": "Imagem não encontrada"}), 404
+
+    # Atualiza os campos
+    for key, value in data.items():
+        if hasattr(image_obj, key):
+            setattr(image_obj, key, value)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Imagem alterada com sucesso",
+        "image_id": image_obj.image_id
+    })
+
+
+
 
 
 #-----------------------------------API Material Table------------------#
