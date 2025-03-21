@@ -155,19 +155,34 @@ def delete_foundation_list():
 
 
 #-----------------------------------API StichBook Table------------------------#
-@app.get('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404":ErrorResponse}) #Buscar uma receita
+@app.get('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404": ErrorResponse})
 def get_all_stichbook():
-    amigurumi_stiches = StitchBook.query.order_by(
-        cast(StitchBook.amigurumi_id, Integer).asc(),
-        cast(StitchBook.element_order, Integer).asc()
-    ).all() 
+    # Realizar a junção entre StitchBookSequence e StitchBook, garantindo que todos os sequence apareçam
+    amigurumi_stiches = db.session.query(StitchBookSequence, StitchBook).outerjoin(
+        StitchBook,  # Mantém todos os StitchBookSequence, mesmo sem StitchBook correspondente
+        (StitchBook.amigurumi_id == StitchBookSequence.amigurumi_id) & 
+        (StitchBook.element_id == StitchBookSequence.element_id)
+    ).order_by(
+        cast(StitchBookSequence.amigurumi_id, Integer).asc(),
+        cast(StitchBookSequence.element_order, Integer).asc(),
+        cast(StitchBook.number_row, Integer).asc()
+    ).all()
 
-    result = [
-        {key: value for key, value in amigurumi.__dict__.items() if not key.startswith('_')}
-        for amigurumi in amigurumi_stiches
-    ]
+    result = []
+    for sequence, stitch in amigurumi_stiches:
+        sequence_data = {key: value for key, value in sequence.__dict__.items() if not key.startswith('_')}
+        
+        # Se stitch for None, criar um dicionário vazio
+        stitch_data = {}
+        if stitch is not None:
+            stitch_data = {key: value for key, value in stitch.__dict__.items() if not key.startswith('_')}
+
+        combined_data = {**sequence_data, **stitch_data}
+        result.append(combined_data)
 
     return jsonify(result)
+
+
 
 
 
@@ -481,7 +496,7 @@ def delete_material_list_line():
 
 #-----------------------------------API StichBook Sequence Table------------------------#
 @app.get('/stitchbook_sequence', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse}) #Buscar uma receita
-def get_all_stichbook():
+def get_all_stichbook_sequence():
     amigurumi_stiches = StitchBookSequence.query.order_by(
         cast(StitchBookSequence.amigurumi_id, Integer).asc(),
        cast(StitchBookSequence.element_order, Integer).asc()
