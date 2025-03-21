@@ -77,6 +77,7 @@ class StitchBookSequence(db.Model):
     amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=False)
     element_order = db.Column(db.Integer, nullable=False)
     element_name = db.Column(db.String, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
