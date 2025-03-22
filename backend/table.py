@@ -26,8 +26,7 @@ class MaterialList(db.Model):
     material_list_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=False)
     material = db.Column(db.String(100), nullable=False)
-    unit = db.Column(db.String(50), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.String(50), nullable=False)
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -60,7 +59,7 @@ class StitchBook(db.Model):
     observation = db.Column(db.String, nullable=False)
     element_id = db.Column(db.Integer, db.ForeignKey('stitchbook_sequence.element_id'), nullable=False)
     number_row = db.Column(db.Integer, nullable=False)
-    colour = db.Column(db.Integer, nullable=False)
+    colour_id = db.Column(db.Integer, nullable=False)
     stich_sequence = db.Column(db.String, nullable=False)
 
     def __init__(self, **kwargs):
@@ -77,7 +76,7 @@ class StitchBookSequence(db.Model):
     amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=False)
     element_order = db.Column(db.Integer, nullable=False)
     element_name = db.Column(db.String, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    repetition = db.Column(db.Integer, nullable=False)
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
