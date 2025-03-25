@@ -1,5 +1,4 @@
-from flask import request, jsonify, render_template,redirect, send_from_directory
-import requests
+from flask import request, jsonify, render_template,redirect
 from flask_cors import CORS
 from database import db
 from config import DevelopmentConfig
@@ -19,11 +18,12 @@ app = OpenAPI(__name__, info=info)
 app.config["SQLALCHEMY_DATABASE_URI"] = DevelopmentConfig.SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = DevelopmentConfig.SQLALCHEMY_TRACK_MODIFICATIONS
 
-openAPI_tag = Tag(name="OpenAPI", description="Endpoints para geração da documentação")
+openAPI_tag = Tag(name="OpenAPI", description="Endpoints para geração da documentação dos APIs")
 foundation_tag = Tag(name="Foudantion", description="Endpoints relacionados à lista de amigurumis")
-stichbook_tag = Tag(name="Stichbook", description="Endpoints relacionados à sequência de pontos")
+foundation_element_tag = Tag(name="Foudantion Element", description="Endpoints relacionados elementos e sua ordem de execução, dos amigurumis")
+stichbook_tag = Tag(name="Stichbook", description="Endpoints relacionados às carreiras das receitas")
 image_tag = Tag(name="Image", description="Endpoints relacionados à imagem do amigurumi")
-material_tag = Tag(name="Material", description="Endpoints relacionados à material")
+material_tag = Tag(name="Material", description="Endpoints relacionados ao material utilizado na construção dos amigurumis")
 
 CORS(app)
 
@@ -72,7 +72,8 @@ def openapi():
 
 
 #-----------------------------------API Foundation List Table----------#
-@app.get('/foundation_list', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "404":ErrorResponse}) # Listar todos os amigurumis
+@app.get('/foundation_list', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "404":ErrorResponse},
+         summary="Requisição para puxar todos os amigurumis listados no banco de dados")
 def get_foundation_list():
     with app.app_context():
         amigurumis = FoundationList.query.all()
@@ -90,7 +91,8 @@ def get_foundation_list():
 
 
 
-@app.post('/foundation_list', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "404":ErrorResponse}) # Imputar 1 amigurumi por vez
+@app.post('/foundation_list', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "404":ErrorResponse},
+         summary="Requisição para imputar um novo amigurumi no banco de dados")
 def add_foundation_list():
     data = request.get_json()
     new_amigurumi = FoundationList()
@@ -110,7 +112,8 @@ def add_foundation_list():
 
 
 
-@app.put('/foundation_list/amigurumi_id', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "404":ErrorResponse}) #Atualizar um amigurumi por ID
+@app.put('/foundation_list/amigurumi_id', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "404":ErrorResponse},
+         summary="Requisição para alterar dados do amigurumi no banco de dados")
 def update_foundation_list():
     data = request.get_json()
     amigurumi_id = int(data.get('amigurumi_id'))
@@ -134,7 +137,8 @@ def update_foundation_list():
 
 
 
-@app.delete('/foundation_list/amigurumi_id', tags=[foundation_tag], responses={"200": FoundationListSchema_AmigurumiID, "404":ErrorResponse}) #Remover um amigurumi por ID
+@app.delete('/foundation_list/amigurumi_id', tags=[foundation_tag], responses={"200": FoundationListSchema_AmigurumiID, "404":ErrorResponse},
+         summary="Requisição para deletar os dados do amigurumi do banco de dados")
 def delete_foundation_list():
     data = request.get_json()
     amigurumi_id = int(data.get('amigurumi_id'))
@@ -155,11 +159,11 @@ def delete_foundation_list():
 
 
 #-----------------------------------API StichBook Table------------------------#
-@app.get('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404": ErrorResponse})
+@app.get('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404": ErrorResponse},
+         summary="Requisição para puxar todas as linhas de receita, para a fabricação do amigurumi")
 def get_all_stichbook():
-    # Realizar a junção entre StitchBookSequence e StitchBook, garantindo que todos os sequence apareçam
     amigurumi_stiches = db.session.query(StitchBookSequence, StitchBook).outerjoin(
-        StitchBook,  # Mantém todos os StitchBookSequence, mesmo sem StitchBook correspondente
+        StitchBook,
         (StitchBook.amigurumi_id == StitchBookSequence.amigurumi_id) & 
         (StitchBook.element_id == StitchBookSequence.element_id)
     ).order_by(
@@ -172,7 +176,6 @@ def get_all_stichbook():
     for sequence, stitch in amigurumi_stiches:
         sequence_data = {key: value for key, value in sequence.__dict__.items() if not key.startswith('_')}
         
-        # Se stitch for None, criar um dicionário vazio
         stitch_data = {}
         if stitch is not None:
             stitch_data = {key: value for key, value in stitch.__dict__.items() if not key.startswith('_')}
@@ -184,10 +187,8 @@ def get_all_stichbook():
 
 
 
-
-
-
-@app.post('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404":ErrorResponse}) # Imputar 1 amigurumi por vez
+@app.post('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404":ErrorResponse},
+         summary="Requisição para adicionar uma nova linha de receita, para a fabricação do amigurumi")
 def add_stichbook():
     data = request.get_json()
 
@@ -209,8 +210,8 @@ def add_stichbook():
 
 
 
-
-@app.put('/stitchbook/line_id', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404":ErrorResponse}) #Atualizar um amigurumi por ID
+@app.put('/stitchbook/line_id', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404":ErrorResponse},
+         summary="Requisição para alterar uma linha de receita")
 def update_stichbook_line():
     data = request.get_json()
     line_id = int(data.get('line_id'))
@@ -233,7 +234,8 @@ def update_stichbook_line():
 
 
 
-@app.delete('/stitchbook/amigurumi_id', tags=[stichbook_tag], responses={"200": StitchBookSchema_AmigurumiID, "404":ErrorResponse}) #Remover totalmente uma receita amigurumis
+@app.delete('/stitchbook/amigurumi_id', tags=[stichbook_tag], responses={"200": StitchBookSchema_AmigurumiID, "404":ErrorResponse},
+         summary="Requisição para deletar todas as linhas de uma amigurumi em específico")
 def delete_stichbook_all():
     data = request.get_json()
     amigurumi_id = int(data.get('amigurumi_id'))
@@ -254,7 +256,8 @@ def delete_stichbook_all():
 
 
 
-@app.delete('/stitchbook/line_id', tags=[stichbook_tag], responses={"200": StitchBookSchema_LineID, "404":ErrorResponse}) #Remover um amigurumi por ID
+@app.delete('/stitchbook/line_id', tags=[stichbook_tag], responses={"200": StitchBookSchema_LineID, "404":ErrorResponse},
+         summary="Requisição para deletar uma linha de receita")
 def delete_stichbook_line():
     data = request.get_json()
     line_id = int(data.get('line_id'))
@@ -273,7 +276,8 @@ def delete_stichbook_line():
 
 
 #-----------------------------------API Image Table -------------------#
-@app.get('/image', tags=[image_tag], responses={"200": ImageSchema_All, "404":ErrorResponse})  # Buscar todas as imagens
+@app.get('/image', tags=[image_tag], responses={"200": ImageSchema_All, "404":ErrorResponse},
+         summary="Requisição para puxar todas as imagens disponíveis dos amigurumis no banco de dados")
 def get_all_image():
     amigurumi_images = Image.query.order_by(desc(Image.main_image)).all()
 
@@ -286,7 +290,8 @@ def get_all_image():
 
 
 
-@app.delete('/image/amigurumi_id', tags=[image_tag], responses={"200": ImageSchema_AmigurumiID, "404":ErrorResponse})  # Remover todas as imagens de um amigurumi
+@app.delete('/image/amigurumi_id', tags=[image_tag], responses={"200": ImageSchema_AmigurumiID, "404":ErrorResponse},
+         summary="Requisição para remover todas as imagens disponíveis no banco de dados, de um amigurumi em específico")
 def delete_image_all():
     data = request.get_json()
     amigurumi_id = int(data.get('amigurumi_id'))
@@ -317,7 +322,8 @@ def delete_image_all():
 
 
 
-@app.delete('/image/image_id', tags=[image_tag], responses={"200": ImageSchema_ImageID, "404":ErrorResponse})  # Remover 1 imagem do amigurumi
+@app.delete('/image/image_id', tags=[image_tag], responses={"200": ImageSchema_ImageID, "404":ErrorResponse},
+         summary="Requisição para deletar apenas uma imagem do amigurumi no banco de dados")  # Remover 1 imagem do amigurumi
 def delete_image_line():
     data = request.get_json()
     image_id = int(data.get('image_id'))
@@ -348,7 +354,8 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.post('/image', tags=[image_tag], responses={"200": ImageSchema_All, "404": ErrorResponse})
+@app.post('/image', tags=[image_tag], responses={"200": ImageSchema_All, "404": ErrorResponse},
+         summary="Requisição para adicionar uma nova imagem do amigurumi no banco de dados")
 def add_image():
     data = request.form
     data = data.to_dict()
@@ -395,7 +402,8 @@ def add_image():
 
 
 
-@app.put('/image/image_id', tags=[image_tag], responses={"200": ImageSchema_All, "404": ErrorResponse})
+@app.put('/image/image_id', tags=[image_tag], responses={"200": ImageSchema_All, "404": ErrorResponse},
+         summary="Requisição para alterar informações sobre uma imagem")
 def update_image():
     data = request.get_json()
 
@@ -403,7 +411,6 @@ def update_image():
     amigurumi_id = int(data.get('amigurumi_id'))
     main_image = str(data.get("main_image", "false")).lower() == "true"
 
-    # Se for a imagem principal, desativa outras imagens principais do mesmo amigurumi
     if main_image:  
         Image.query.filter_by(amigurumi_id=amigurumi_id, main_image=True).update({"main_image": False})
         db.session.commit()
@@ -413,7 +420,6 @@ def update_image():
     if not image_obj:
         return jsonify({"error": "Imagem não encontrada"}), 404
 
-    # Atualiza os campos
     for key, value in data.items():
         if hasattr(image_obj, key):
             setattr(image_obj, key, value)
@@ -431,7 +437,8 @@ def update_image():
 
 #-----------------------------------API Material Table------------------#
 
-@app.post('/material_list', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse}) # Imputar 1 material por vez
+@app.post('/material_list', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse},
+         summary="Requisição para adicionar novos materiais utilizados na construção do amigurumi") 
 def add_material_list():
     data = request.get_json()
     amigurumi_id = int(data.get('amigurumi_id'))
@@ -450,7 +457,8 @@ def add_material_list():
     })
 
 
-@app.get('/material_list', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse}) #Buscar todos os materiais por amigurumi
+@app.get('/material_list', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse},
+         summary="Requisição para puxar todos os materiais utilizados na construção do amigurumi")
 def get_all_material_list():
     amigurumi_material = MaterialList.query.all()
 
@@ -463,7 +471,8 @@ def get_all_material_list():
 
 
 
-@app.put('/material_list/material_list_id', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse}) #Atualizar 1 material
+@app.put('/material_list/material_list_id', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse},
+         summary="Requisição para alterar um materiais utilizados na construção do amigurumi")
 def update_material_list_line():
     data = request.get_json()
     material_list_id = int(data.get('material_list_id'))
@@ -486,7 +495,8 @@ def update_material_list_line():
 
 
 
-@app.delete('/material_list/amigurumi_id', tags=[material_tag], responses={"200": MaterialListSchema_AmigurumiID, "404":ErrorResponse}) #Remover todos os materiais de 1 amigurumi
+@app.delete('/material_list/amigurumi_id', tags=[material_tag], responses={"200": MaterialListSchema_AmigurumiID, "404":ErrorResponse},
+         summary="Requisição para deletar todos os materiais utilizados na construção de um amigurumi em específico")
 def delete_material_list_all():
     data = request.get_json()
     amigurumi_id = int(data.get('amigurumi_id'))
@@ -507,7 +517,8 @@ def delete_material_list_all():
 
 
 
-@app.delete('/material_list/material_list_id', tags=[material_tag], responses={"200": MaterialListSchema_MaterialID, "404":ErrorResponse}) #Remover 1 material
+@app.delete('/material_list/material_list_id', tags=[material_tag], responses={"200": MaterialListSchema_MaterialID, "404":ErrorResponse},
+         summary="Requisição para deletar um materiais utilizados na construção do amigurumi")
 def delete_material_list_line():
     data = request.get_json()
     material_list_id = int(data.get('material_list_id'))
@@ -527,7 +538,8 @@ def delete_material_list_line():
 
 
 #-----------------------------------API StichBook Sequence Table------------------------#
-@app.get('/stitchbook_sequence', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse}) #Buscar uma receita
+@app.get('/stitchbook_sequence', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
+         summary="Requisição para puxar todos os elementos de uma receita")
 def get_all_stichbook_sequence():
     amigurumi_stiches = StitchBookSequence.query.order_by(
         cast(StitchBookSequence.amigurumi_id, Integer).asc(),
@@ -543,7 +555,8 @@ def get_all_stichbook_sequence():
 
 
 
-@app.post('/stitchbook_sequence', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse}) # Imputar 1 amigurumi por vez
+@app.post('/stitchbook_sequence', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
+         summary="Requisição para adicionar um novo elemento a uma receita")
 def add_stichbook_sequence():
     data = request.get_json()
 
@@ -566,7 +579,8 @@ def add_stichbook_sequence():
 
 
 
-@app.put('/stitchbook_sequence/element_id', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse}) #Atualizar um amigurumi por ID
+@app.put('/stitchbook_sequence/element_id', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
+         summary="Requisição para alterar um elemento de uma receita")
 def update_stichbook_sequence_element():
     data = request.get_json()
     element_id = int(data.get('element_id'))
@@ -589,7 +603,8 @@ def update_stichbook_sequence_element():
 
 
 
-@app.delete('/stitchbook_sequence/element_id', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_ElementID, "404":ErrorResponse}) #Remover totalmente uma receita amigurumis
+@app.delete('/stitchbook_sequence/element_id', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_ElementID, "404":ErrorResponse},
+         summary="Requisição para deletar um elemento de uma receita")
 def delete_stichbook_sequence_elementId():
     data = request.get_json()
     element_id = int(data.get('element_id'))
