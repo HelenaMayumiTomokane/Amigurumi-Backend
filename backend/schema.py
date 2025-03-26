@@ -14,8 +14,10 @@ def FoundationList_All(model_class):
         
         if column.nullable:
             column_type = Optional[column_type]  
-        
-        annotations[column.name] = (column_type, ...)
+            annotations[column.name] = (column_type, None)
+
+        else:
+            annotations[column.name] = (column_type, ...)
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
@@ -43,22 +45,14 @@ def MaterialList_All(model_class):
         
         if column.nullable:
             column_type = Optional[column_type]  
-        
-        annotations[column.name] = (column_type, ...)
+            annotations[column.name] = (column_type, None)
+
+        else:
+            annotations[column.name] = (column_type, ...)
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
 MaterialListSchema_All = MaterialList_All(MaterialList)
-
-
-
-def MaterialList_AmigurumiID(model_class):
-    class MaterialListAmigurumiID(BaseModel):
-        amigurumi_id: int
-        
-    return MaterialListAmigurumiID
-
-MaterialListSchema_AmigurumiID = MaterialList_AmigurumiID(MaterialList)
 
 
 
@@ -82,8 +76,10 @@ def Image_All(model_class):
         
         if column.nullable:
             column_type = Optional[column_type]  
-        
-        annotations[column.name] = (column_type, ...)
+            annotations[column.name] = (column_type, None)
+
+        else:
+            annotations[column.name] = (column_type, ...)
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
@@ -91,19 +87,9 @@ ImageSchema_All = Image_All(Image)
 
 
 
-def Image_AmigurumiID(model_class):
-    class ImageAmigurumiID(BaseModel):
-        amigurumi_id: int
-        
-    return ImageAmigurumiID
-
-ImageSchema_AmigurumiID = Image_AmigurumiID(Image)
-
-
-
 def Image_ImageID(model_class):
     class ImageImageID(BaseModel):
-        amigurumi_id: int
+        image_id: int
         
     return ImageImageID
 
@@ -121,28 +107,19 @@ def StitchBook_All(model_class):
         
         if column.nullable:
             column_type = Optional[column_type]  
-        
-        annotations[column.name] = (column_type, ...)
+            annotations[column.name] = (column_type, None)
+
+        else:
+            annotations[column.name] = (column_type, ...)
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
 StitchBookSchema_All = StitchBook_All(StitchBook)
 
 
-
-def StitchBook_AmigurumiID(model_class):
-    class StitchBookAmigurumiID(BaseModel):
-        amigurumi_id: int
-        
-    return StitchBookAmigurumiID
-
-StitchBookSchema_AmigurumiID = StitchBook_AmigurumiID(StitchBook)
-
-
-
 def StitchBook_LineID(model_class):
     class StitchBookLineID(BaseModel):
-        amigurumi_id: int
+        line_id: int
         
     return StitchBookLineID
 
@@ -161,8 +138,10 @@ def StitchBookSequence_All(model_class):
         
         if column.nullable:
             column_type = Optional[column_type]  
-        
-        annotations[column.name] = (column_type, ...)
+            annotations[column.name] = (column_type, None)
+
+        else:
+            annotations[column.name] = (column_type, ...)
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 

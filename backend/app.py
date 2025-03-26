@@ -5,25 +5,25 @@ from config import DevelopmentConfig
 from table import *
 import os
 from flask_openapi3 import OpenAPI, Info, Tag
-from errorSchema import *
+from error_schema import *
 from schema import *
 from sqlalchemy import desc, cast, Integer
 
 UPLOAD_FOLDER = "backend/bd_image"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-info = Info(title="Minha API de Amigurumi", version="1.0.0", description="API para gerenciar amigurumis, receitas, imagens e materiais.")
+info = Info(title="Minha API de Amigurumi", version="1.0.0", description="API para gerenciar amigurumis, receitas, imagens e materiais utilizados.")
 app = OpenAPI(__name__, info=info)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DevelopmentConfig.SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = DevelopmentConfig.SQLALCHEMY_TRACK_MODIFICATIONS
 
-openAPI_tag = Tag(name="OpenAPI", description="Endpoints para geração da documentação dos APIs")
-foundation_tag = Tag(name="Foudantion", description="Endpoints relacionados à lista de amigurumis")
-foundation_element_tag = Tag(name="Foudantion Element", description="Endpoints relacionados elementos e sua ordem de execução, dos amigurumis")
-stichbook_tag = Tag(name="Stichbook", description="Endpoints relacionados às carreiras das receitas")
-image_tag = Tag(name="Image", description="Endpoints relacionados à imagem do amigurumi")
-material_tag = Tag(name="Material", description="Endpoints relacionados ao material utilizado na construção dos amigurumis")
+openAPI_tag = Tag(name="OpenAPI", description="Endpoint para geração da documentação dos APIs")
+foundation_tag = Tag(name="Foudantion", description="Endpoints relacionados à adição, manipulação, busca e exclusão de dados sobre os amigurumis")
+stichbook_element_tag = Tag(name="Stitchbook Element", description="Endpoints relacionados à adição, manipulação, busca e exclusão de elementos dos amigurumis e sua ordem de execução")
+stichbook_tag = Tag(name="Stichbook", description="Endpoints relacionados à adição, manipulação, busca e exclusão das carreiras utilizadas na construção dos amigurumis")
+image_tag = Tag(name="Image", description="Endpoints relacionados à adição, manipulação, busca e exclusão de imagem dos amigurumi")
+material_tag = Tag(name="Material", description="Endpoints relacionados à adição, manipulação, busca e exclusão de materiais utilizados na construção dos amigurumis")
 
 CORS(app)
 
@@ -71,9 +71,10 @@ def openapi():
         return redirect("http://127.0.0.1:5000/elements")
 
 
+
 #-----------------------------------API Foundation List Table----------#
 @app.get('/foundation_list', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "404":ErrorResponse},
-         summary="Requisição para puxar todos os amigurumis listados no banco de dados")
+         summary="Requisição para puxar todos os amigurumis cadastrados")
 def get_foundation_list():
     with app.app_context():
         amigurumis = FoundationList.query.all()
@@ -90,9 +91,8 @@ def get_foundation_list():
 
 
 
-
 @app.post('/foundation_list', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "404":ErrorResponse},
-         summary="Requisição para imputar um novo amigurumi no banco de dados")
+         summary="Requisição para cadastrar um novo amigurumi")
 def add_foundation_list():
     data = request.get_json()
     new_amigurumi = FoundationList()
@@ -105,15 +105,15 @@ def add_foundation_list():
     db.session.commit()
 
     return jsonify({
-        "message": f"Amigurumi '{new_amigurumi.name}' adicionado com sucesso!",
-        "amigurumi_id": new_amigurumi.amigurumi_id
+        "message": f"Amigurumi {new_amigurumi.name} adicionado com sucesso!",
+        "amigurumi_id": new_amigurumi.amigurumi_id,
     })
 
 
 
 
 @app.put('/foundation_list/amigurumi_id', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "404":ErrorResponse},
-         summary="Requisição para alterar dados do amigurumi no banco de dados")
+         summary="Requisição para alterar os dados do amigurumi cadastrado")
 def update_foundation_list():
     data = request.get_json()
     amigurumi_id = int(data.get('amigurumi_id'))
@@ -130,15 +130,15 @@ def update_foundation_list():
     db.session.commit()
 
     return jsonify({
-        "message": f"Amigurumi '{amigurumi.name}' atualizado com sucesso!",
-        "amigurumi_id": amigurumi.amigurumi_id
+        "message": f"Amigurumi {amigurumi.name} atualizado com sucesso!",
+        "amigurumi_id": amigurumi.amigurumi_id,
     })
 
 
 
 
 @app.delete('/foundation_list/amigurumi_id', tags=[foundation_tag], responses={"200": FoundationListSchema_AmigurumiID, "404":ErrorResponse},
-         summary="Requisição para deletar os dados do amigurumi do banco de dados")
+         summary="Requisição para deletar os dados do amigurumi cadastrado")
 def delete_foundation_list():
     data = request.get_json()
     amigurumi_id = int(data.get('amigurumi_id'))
@@ -151,8 +151,8 @@ def delete_foundation_list():
     db.session.commit() 
 
     return jsonify({
-        "message": f"Amigurumi '{amigurumi.name}' removido com sucesso!",
-        "amigurumi_id": amigurumi.amigurumi_id
+        "message": f"Amigurumi {amigurumi.name} removido com sucesso!",
+        "amigurumi_id": amigurumi.amigurumi_id,
     })
 
 
@@ -160,7 +160,7 @@ def delete_foundation_list():
 
 #-----------------------------------API StichBook Table------------------------#
 @app.get('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404": ErrorResponse},
-         summary="Requisição para puxar todas as linhas de receita, para a fabricação do amigurumi")
+         summary="Requisição para puxar as linhas de todas as receitas cadastradas")
 def get_all_stichbook():
     amigurumi_stiches = db.session.query(StitchBookSequence, StitchBook).outerjoin(
         StitchBook,
@@ -188,7 +188,7 @@ def get_all_stichbook():
 
 
 @app.post('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404":ErrorResponse},
-         summary="Requisição para adicionar uma nova linha de receita, para a fabricação do amigurumi")
+         summary="Requisição para cadastradas uma nova linha de receita")
 def add_stichbook():
     data = request.get_json()
 
@@ -203,15 +203,14 @@ def add_stichbook():
     db.session.commit()
 
     return jsonify({
-        "message": f"Linha a adicionada com sucesso!",
-        "amigurumi_id": amigurumi.amigurumi_id,
+        "message": f"Linha a adicionada com sucesso para o amigurumi {amigurumi.amigurumi_id}!",
         "line_id": new_receita.line_id,
     })
 
 
 
 @app.put('/stitchbook/line_id', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404":ErrorResponse},
-         summary="Requisição para alterar uma linha de receita")
+         summary="Requisição para alterar uma linha de receita cadastrada")
 def update_stichbook_line():
     data = request.get_json()
     line_id = int(data.get('line_id'))
@@ -228,36 +227,14 @@ def update_stichbook_line():
     db.session.commit()
 
     return jsonify({
-        "message": f"Linha '{amigurumi.line_id}' atualizada com sucesso!",
+        "message": f"Linha {amigurumi.line_id} atualizada com sucesso!",
+        "line_id": amigurumi.line_id,
     })
-
-
-
-
-@app.delete('/stitchbook/amigurumi_id', tags=[stichbook_tag], responses={"200": StitchBookSchema_AmigurumiID, "404":ErrorResponse},
-         summary="Requisição para deletar todas as linhas de uma amigurumi em específico")
-def delete_stichbook_all():
-    data = request.get_json()
-    amigurumi_id = int(data.get('amigurumi_id'))
-    amigurumis = StitchBook.query.filter(StitchBook.amigurumi_id == amigurumi_id).all()
-
-    if not amigurumis:
-        return jsonify({"error": "Amigurumi não encontrado"}), 404
-
-    for amigurumi in amigurumis:
-        db.session.delete(amigurumi)
-    
-    db.session.commit()
-
-    return jsonify({
-        "message": f"Todas as receitas do Amigurumi com amigurumi_id '{amigurumi_id}' foram removidas com sucesso!",
-    })
-
 
 
 
 @app.delete('/stitchbook/line_id', tags=[stichbook_tag], responses={"200": StitchBookSchema_LineID, "404":ErrorResponse},
-         summary="Requisição para deletar uma linha de receita")
+         summary="Requisição para deletar uma linha de receita cadastrada")
 def delete_stichbook_line():
     data = request.get_json()
     line_id = int(data.get('line_id'))
@@ -270,14 +247,15 @@ def delete_stichbook_line():
     db.session.commit() 
 
     return jsonify({
-        "message": f"Linha '{amigurumi.line_id}' removida com sucesso!",
+        "message": f"Linha {amigurumi.line_id} removida com sucesso!",
+        "line_id": amigurumi.line_id,
     })
 
 
 
 #-----------------------------------API Image Table -------------------#
 @app.get('/image', tags=[image_tag], responses={"200": ImageSchema_All, "404":ErrorResponse},
-         summary="Requisição para puxar todas as imagens disponíveis dos amigurumis no banco de dados")
+         summary="Requisição para puxar todas as imagens cadastradas dos amigurumis")
 def get_all_image():
     amigurumi_images = Image.query.order_by(desc(Image.main_image)).all()
 
@@ -290,72 +268,8 @@ def get_all_image():
 
 
 
-@app.delete('/image/amigurumi_id', tags=[image_tag], responses={"200": ImageSchema_AmigurumiID, "404":ErrorResponse},
-         summary="Requisição para remover todas as imagens disponíveis no banco de dados, de um amigurumi em específico")
-def delete_image_all():
-    data = request.get_json()
-    amigurumi_id = int(data.get('amigurumi_id'))
-    amigurumis = Image.query.filter(Image.amigurumi_id == amigurumi_id).all()
-
-    if not amigurumis:
-        return jsonify({"error": "Amigurumi não encontrado"}), 404
-
-    for amigurumi in amigurumis:
-        file_path = os.path.join(UPLOAD_FOLDER, amigurumi.image_route)
-
-        if os.path.exists(file_path):
-            try:
-                os.remove(file_path)
-            except Exception as e:
-                return jsonify({"error": f"Erro ao deletar o arquivo: {str(e)}"}), 500
-        else:
-            return jsonify({"error": f"Arquivo {amigurumi.image_route} não encontrado no sistema de arquivos"}), 404
-
-        db.session.delete(amigurumi)
-
-    db.session.commit()
-
-    return jsonify({
-        "message": f"Todas as imagens do Amigurumi '{amigurumi_id}' foram removidas com sucesso!",
-    })
-
-
-
-
-@app.delete('/image/image_id', tags=[image_tag], responses={"200": ImageSchema_ImageID, "404":ErrorResponse},
-         summary="Requisição para deletar apenas uma imagem do amigurumi no banco de dados")  # Remover 1 imagem do amigurumi
-def delete_image_line():
-    data = request.get_json()
-    image_id = int(data.get('image_id'))
-    image = Image.query.get(image_id)
-
-    if not image:
-        return jsonify({"error": "Imagem não encontrada"}), 404
-
-    file_path = os.path.join(UPLOAD_FOLDER, image.image_route)
-
-    if os.path.exists(file_path):
-        try:
-            os.remove(file_path)
-        except Exception as e:
-            return jsonify({"error": f"Erro ao deletar o arquivo: {str(e)}"}), 500
-    else:
-        return jsonify({"error": "Arquivo não encontrado no sistema de arquivos"}), 404
-    
-    db.session.delete(image)
-    db.session.commit()
-
-    return jsonify({
-        "message": f"Imagem com ID {image_id} removida com sucesso!",
-    })
-
-
-def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 @app.post('/image', tags=[image_tag], responses={"200": ImageSchema_All, "404": ErrorResponse},
-         summary="Requisição para adicionar uma nova imagem do amigurumi no banco de dados")
+         summary="Requisição para cadastrar uma nova imagem de um amigurumi")
 def add_image():
     data = request.form
     data = data.to_dict()
@@ -397,13 +311,13 @@ def add_image():
 
     return jsonify({
         "message": f"Imagem salva com sucesso no caminho: {file_path}",
-        "image_path": file_path
+        "image_id": image_id,
     })
 
 
 
 @app.put('/image/image_id', tags=[image_tag], responses={"200": ImageSchema_All, "404": ErrorResponse},
-         summary="Requisição para alterar informações sobre uma imagem")
+         summary="Requisição para alterar informações sobre uma imagem cadastrada de um amigurumi")
 def update_image():
     data = request.get_json()
 
@@ -428,17 +342,58 @@ def update_image():
 
     return jsonify({
         "message": "Imagem alterada com sucesso",
-        "image_id": image_obj.image_id
+        "image_id": image_obj.image_id,
     })
 
 
 
+@app.delete('/image/image_id', tags=[image_tag], responses={"200": ImageSchema_ImageID, "404":ErrorResponse},
+         summary="Requisição para deletar uma imagem cadastrada de um amigurumi")
+def delete_image_line():
+    data = request.get_json()
+    image_id = int(data.get('image_id'))
+    image = Image.query.get(image_id)
+
+    if not image:
+        return jsonify({"error": "Imagem não encontrada"}), 404
+
+    file_path = os.path.join(UPLOAD_FOLDER, image.image_route)
+
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+        except Exception as e:
+            return jsonify({"error": f"Erro ao deletar o arquivo: {str(e)}"}), 500
+    else:
+        return jsonify({"error": "Arquivo não encontrado no sistema de arquivos"}), 404
+    
+    db.session.delete(image)
+    db.session.commit()
+
+    return jsonify({
+        "message": f"Imagem com ID {image_id} removida com sucesso!",
+        "image_id": image_id,
+    })
+
 
 
 #-----------------------------------API Material Table------------------#
+@app.get('/material_list', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse},
+         summary="Requisição para puxar todos os materiais utilizados na construção do amigurumi")
+def get_all_material_list():
+    amigurumi_material = MaterialList.query.all()
+
+    result = [
+        {key: value for key, value in amigurumi.__dict__.items() if not key.startswith('_')}
+        for amigurumi in amigurumi_material
+    ]
+
+    return jsonify(result)
+
+
 
 @app.post('/material_list', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse},
-         summary="Requisição para adicionar novos materiais utilizados na construção do amigurumi") 
+         summary="Requisição para cadastrar novos materiais utilizados na construção do amigurumi") 
 def add_material_list():
     data = request.get_json()
     amigurumi_id = int(data.get('amigurumi_id'))
@@ -453,21 +408,9 @@ def add_material_list():
     db.session.commit()
 
     return jsonify({
-        "message": f"Amigurumi '{new_material_list.amigurumi_id}' adicionado com sucesso!",
+        "message": f"Amigurumi {new_material_list.amigurumi_id} adicionado com sucesso!",
+        "material_list_id": new_material_list.material_list_id,
     })
-
-
-@app.get('/material_list', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse},
-         summary="Requisição para puxar todos os materiais utilizados na construção do amigurumi")
-def get_all_material_list():
-    amigurumi_material = MaterialList.query.all()
-
-    result = [
-        {key: value for key, value in amigurumi.__dict__.items() if not key.startswith('_')}
-        for amigurumi in amigurumi_material
-    ]
-
-    return jsonify(result)
 
 
 
@@ -489,31 +432,9 @@ def update_material_list_line():
     db.session.commit()
 
     return jsonify({
-        "message": f"Material '{amigurumi.material_list_id}' atualizado com sucesso!",
+        "message": f"Material {amigurumi.material_list_id} atualizado com sucesso!",
+        "material_list_id": material_list_id,
     })
-
-
-
-
-@app.delete('/material_list/amigurumi_id', tags=[material_tag], responses={"200": MaterialListSchema_AmigurumiID, "404":ErrorResponse},
-         summary="Requisição para deletar todos os materiais utilizados na construção de um amigurumi em específico")
-def delete_material_list_all():
-    data = request.get_json()
-    amigurumi_id = int(data.get('amigurumi_id'))
-    amigurumis = MaterialList.query.filter(MaterialList.amigurumi_id == amigurumi_id).all()
-
-    if not amigurumis:
-        return jsonify({"error": "Amigurumi não encontrado"}), 404
-
-    for amigurumi in amigurumis:
-        db.session.delete(amigurumi)
-    
-    db.session.commit()
-
-    return jsonify({
-        "message": f"Todos os materiais do amigurumi '{amigurumi_id}' foram removidas com sucesso!",
-    })
-
 
 
 
@@ -531,15 +452,16 @@ def delete_material_list_line():
     db.session.commit() 
 
     return jsonify({
-        "message": f"Material '{amigurumi.material_list_id}' foi removido com sucesso!",
+        "message": f"Material {amigurumi.material_list_id} foi removido com sucesso!",
+        "material_list_id": material_list_id,
     })
 
 
 
 
 #-----------------------------------API StichBook Sequence Table------------------------#
-@app.get('/stitchbook_sequence', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
-         summary="Requisição para puxar todos os elementos de uma receita")
+@app.get('/stitchbook_sequence', tags=[stichbook_element_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
+         summary="Requisição para puxar todos os elementos cadastrados")
 def get_all_stichbook_sequence():
     amigurumi_stiches = StitchBookSequence.query.order_by(
         cast(StitchBookSequence.amigurumi_id, Integer).asc(),
@@ -555,8 +477,8 @@ def get_all_stichbook_sequence():
 
 
 
-@app.post('/stitchbook_sequence', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
-         summary="Requisição para adicionar um novo elemento a uma receita")
+@app.post('/stitchbook_sequence', tags=[stichbook_element_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
+         summary="Requisição para cadastrar um novo elemento à um amigurumi")
 def add_stichbook_sequence():
     data = request.get_json()
 
@@ -572,15 +494,14 @@ def add_stichbook_sequence():
 
     return jsonify({
         "message": f"Linha a adicionada com sucesso!",
-        "amigurumi_id": amigurumi.amigurumi_id,
         "element_id": new_receita.element_id,
     })
 
 
 
 
-@app.put('/stitchbook_sequence/element_id', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
-         summary="Requisição para alterar um elemento de uma receita")
+@app.put('/stitchbook_sequence/element_id', tags=[stichbook_element_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
+         summary="Requisição para alterar um elemento de um amigurumi")
 def update_stichbook_sequence_element():
     data = request.get_json()
     element_id = int(data.get('element_id'))
@@ -597,27 +518,27 @@ def update_stichbook_sequence_element():
     db.session.commit()
 
     return jsonify({
-        "message": f"Linha '{elementID.element_id}' atualizada com sucesso!",
+        "message": f"Linha {elementID.element_id} atualizada com sucesso!",
+        "element_id": element_id,
     })
 
 
 
 
-@app.delete('/stitchbook_sequence/element_id', tags=[stichbook_tag], responses={"200": StitchBookSequenceSchema_ElementID, "404":ErrorResponse},
-         summary="Requisição para deletar um elemento de uma receita")
+@app.delete('/stitchbook_sequence/element_id', tags=[stichbook_element_tag], responses={"200": StitchBookSequenceSchema_ElementID, "404":ErrorResponse},
+         summary="Requisição para deletar um elemento de um amigurumi")
 def delete_stichbook_sequence_elementId():
     data = request.get_json()
     element_id = int(data.get('element_id'))
-    element_ids = StitchBookSequence.query.filter(StitchBookSequence.element_id == element_id).all()
+    elementID = StitchBookSequence.query.get(element_id)  
 
-    if not element_ids:
-        return jsonify({"error": "Amigurumi não encontrado"}), 404
+    if not elementID:
+        return jsonify({"error": "Elemento não encontrado"}), 404
 
-    for element_id in element_ids:
-        db.session.delete(element_id)
-    
-    db.session.commit()
+    db.session.delete(elementID) 
+    db.session.commit() 
 
     return jsonify({
-        "message": f"Element_id '{element_id}' foi removido com sucesso!",
+        "message": f"Element_id {element_id} foi removido com sucesso!",
+        "element_id": element_id,
     })
