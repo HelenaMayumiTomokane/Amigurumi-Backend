@@ -20,7 +20,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = DevelopmentConfig.SQLALCHEMY_TRAC
 
 openAPI_tag = Tag(name="OpenAPI", description="Endpoint para geração da documentação dos APIs")
 foundation_tag = Tag(name="Foudantion", description="Endpoints relacionados à adição, manipulação, busca e exclusão de dados sobre os amigurumis")
-stichbook_element_tag = Tag(name="Stitchbook Element", description="Endpoints relacionados à adição, manipulação, busca e exclusão de elementos dos amigurumis e sua ordem de execução")
+stichbook_sequence_tag = Tag(name="Stitchbook Element", description="Endpoints relacionados à adição, manipulação, busca e exclusão de elementos dos amigurumis e sua ordem de execução")
 stichbook_tag = Tag(name="Stichbook", description="Endpoints relacionados à adição, manipulação, busca e exclusão das carreiras utilizadas na construção dos amigurumis")
 image_tag = Tag(name="Image", description="Endpoints relacionados à adição, manipulação, busca e exclusão de imagem dos amigurumi")
 material_tag = Tag(name="Material", description="Endpoints relacionados à adição, manipulação, busca e exclusão de materiais utilizados na construção dos amigurumis")
@@ -448,7 +448,7 @@ def delete_material_list_line():
 
 
 #-----------------------------------API StichBook Sequence Table------------------------#
-@app.get('/stitchbook_sequence', tags=[stichbook_element_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
+@app.get('/stitchbook_sequence', tags=[stichbook_sequence_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
          summary="Requisição para puxar todos os elementos cadastrados")
 def get_all_stichbook_sequence():
     amigurumi_stiches = StitchBookSequence.query.order_by(
@@ -465,7 +465,7 @@ def get_all_stichbook_sequence():
 
 
 
-@app.post('/stitchbook_sequence', tags=[stichbook_element_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
+@app.post('/stitchbook_sequence', tags=[stichbook_sequence_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
          summary="Requisição para cadastrar um novo elemento à um amigurumi")
 def add_stichbook_sequence():
     data = request.get_json()
@@ -487,7 +487,7 @@ def add_stichbook_sequence():
 
 
 
-@app.put('/stitchbook_sequence/element_id', tags=[stichbook_element_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
+@app.put('/stitchbook_sequence/element_id', tags=[stichbook_sequence_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
          summary="Requisição para alterar um elemento de um amigurumi")
 def update_stichbook_sequence_element():
     data = request.get_json()
@@ -511,7 +511,7 @@ def update_stichbook_sequence_element():
 
 
 
-@app.delete('/stitchbook_sequence/element_id', tags=[stichbook_element_tag], responses={"200": StitchBookSequenceSchema_ElementID, "404":ErrorResponse},
+@app.delete('/stitchbook_sequence/element_id', tags=[stichbook_sequence_tag], responses={"200": StitchBookSequenceSchema_ElementID, "404":ErrorResponse},
          summary="Requisição para deletar um elemento de um amigurumi")
 def delete_stichbook_sequence_elementId():
     data = request.get_json()
