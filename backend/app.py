@@ -117,7 +117,6 @@ def add_foundation_list():
 def update_foundation_list():
     data = request.get_json()
     amigurumi_id = int(data.get('amigurumi_id'))
-
     amigurumi = FoundationList.query.get(amigurumi_id)  
 
     if not amigurumi:
@@ -191,10 +190,9 @@ def get_all_stichbook():
          summary="Requisição para cadastradas uma nova linha de receita")
 def add_stichbook():
     data = request.get_json()
-
     amigurumi_id = data.get('amigurumi_id')
-
     amigurumi = FoundationList.query.get(amigurumi_id)
+
     if not amigurumi:
         return jsonify({"error": "Amigurumi não cadastrado"}), 404
 
@@ -214,21 +212,20 @@ def add_stichbook():
 def update_stichbook_line():
     data = request.get_json()
     line_id = int(data.get('line_id'))
+    lineID = StitchBook.query.get(line_id)  
 
-    amigurumi = StitchBook.query.get(line_id)  
-
-    if not amigurumi:
+    if not lineID:
         return jsonify({"error": "Amigurumi não encontrado"}), 404
 
     for key, value in data.items():
-        if hasattr(amigurumi, key):
-            setattr(amigurumi, key, value)
+        if hasattr(lineID, key):
+            setattr(lineID, key, value)
 
     db.session.commit()
 
     return jsonify({
-        "message": f"Linha {amigurumi.line_id} atualizada com sucesso!",
-        "line_id": amigurumi.line_id,
+        "message": f"Linha {line_id} atualizada com sucesso!",
+        "line_id": line_id,
     })
 
 
@@ -238,17 +235,17 @@ def update_stichbook_line():
 def delete_stichbook_line():
     data = request.get_json()
     line_id = int(data.get('line_id'))
-    amigurumi = StitchBook.query.get(line_id) 
+    lineID = StitchBook.query.get(line_id) 
 
-    if not amigurumi:
+    if not lineID:
         return jsonify({"error": "Amigurumi não encontrado"}), 404
 
-    db.session.delete(amigurumi) 
+    db.session.delete(lineID) 
     db.session.commit() 
 
     return jsonify({
-        "message": f"Linha {amigurumi.line_id} removida com sucesso!",
-        "line_id": amigurumi.line_id,
+        "message": f"Linha {line_id} removida com sucesso!",
+        "line_id": line_id,
     })
 
 
@@ -273,10 +270,8 @@ def get_all_image():
 def add_image():
     data = request.form
     data = data.to_dict()
-
     amigurumi_id = data.get("amigurumi_id")
     amigurumi = FoundationList.query.get(amigurumi_id)
-
     main_image = True if str(data.get("main_image")).lower() == "true" else False
     data["main_image"] = main_image    
 
@@ -285,11 +280,7 @@ def add_image():
         return jsonify({"error": "Imagem não fornecida"}), 400
 
     if not amigurumi:
-        return jsonify({"error": "amigurumi_id não encontrado"}), 404
-
-    
-    if not image_route:
-        return jsonify({"error": "A URL da imagem (image_route) é obrigatória"}), 400
+        return jsonify({"error": "Amigurumi não encontrado"}), 404
 
     if main_image:  
         Image.query.filter_by(amigurumi_id=amigurumi_id, main_image=True).update({"main_image": False})
@@ -320,7 +311,6 @@ def add_image():
          summary="Requisição para alterar informações sobre uma imagem cadastrada de um amigurumi")
 def update_image():
     data = request.get_json()
-
     image_id = int(data.get('image_id'))
     amigurumi_id = int(data.get('amigurumi_id'))
     main_image = str(data.get("main_image", "false")).lower() == "true"
@@ -363,9 +353,9 @@ def delete_image_line():
         try:
             os.remove(file_path)
         except Exception as e:
-            return jsonify({"error": f"Erro ao deletar o arquivo: {str(e)}"}), 500
+            return jsonify({"error": f"Erro ao deletar a imagem: {str(e)}"}), 500
     else:
-        return jsonify({"error": "Arquivo não encontrado no sistema de arquivos"}), 404
+        return jsonify({"error": "Imagem não encontrada"}), 404
     
     db.session.delete(image)
     db.session.commit()
@@ -400,10 +390,9 @@ def add_material_list():
     amigurumi = FoundationList.query.get(amigurumi_id)
 
     if not amigurumi:
-        return jsonify({"error": "amigurumi_id não encontrado"}), 404
+        return jsonify({"error": "Amigurumi não encontrado"}), 404
 
     new_material_list = MaterialList(**data)
-
     db.session.add(new_material_list)
     db.session.commit()
 
@@ -419,20 +408,19 @@ def add_material_list():
 def update_material_list_line():
     data = request.get_json()
     material_list_id = int(data.get('material_list_id'))
+    materialListID = MaterialList.query.get(material_list_id)  
 
-    amigurumi = MaterialList.query.get(material_list_id)  
-
-    if not amigurumi:
-        return jsonify({"error": "Amigurumi não encontrado"}), 404
+    if not materialListID:
+        return jsonify({"error": "Material não encontrado"}), 404
 
     for key, value in data.items():
-        if hasattr(amigurumi, key):
-            setattr(amigurumi, key, value)
+        if hasattr(materialListID, key):
+            setattr(materialListID, key, value)
 
     db.session.commit()
 
     return jsonify({
-        "message": f"Material {amigurumi.material_list_id} atualizado com sucesso!",
+        "message": f"Material {material_list_id} atualizado com sucesso!",
         "material_list_id": material_list_id,
     })
 
@@ -443,16 +431,16 @@ def update_material_list_line():
 def delete_material_list_line():
     data = request.get_json()
     material_list_id = int(data.get('material_list_id'))
-    amigurumi = MaterialList.query.get(material_list_id) 
+    materialListID = MaterialList.query.get(material_list_id) 
 
-    if not amigurumi:
-        return jsonify({"error": "Amigurumi não encontrado"}), 404
+    if not materialListID:
+        return jsonify({"error": "Material não encontrado"}), 404
 
-    db.session.delete(amigurumi) 
+    db.session.delete(materialListID) 
     db.session.commit() 
 
     return jsonify({
-        "message": f"Material {amigurumi.material_list_id} foi removido com sucesso!",
+        "message": f"Material {material_list_id} foi removido com sucesso!",
         "material_list_id": material_list_id,
     })
 
@@ -481,12 +469,11 @@ def get_all_stichbook_sequence():
          summary="Requisição para cadastrar um novo elemento à um amigurumi")
 def add_stichbook_sequence():
     data = request.get_json()
-
     amigurumi_id = data.get('amigurumi_id')
-
     amigurumi = FoundationList.query.get(amigurumi_id)
+
     if not amigurumi:
-        return jsonify({"error": "Amigurumi não cadastrado"}), 404
+        return jsonify({"error": "Amigurumi não encontrado"}), 404
 
     new_receita = StitchBookSequence(**data)
     db.session.add(new_receita)
@@ -505,7 +492,6 @@ def add_stichbook_sequence():
 def update_stichbook_sequence_element():
     data = request.get_json()
     element_id = int(data.get('element_id'))
-
     elementID = StitchBookSequence.query.get(element_id)  
 
     if not elementID:
