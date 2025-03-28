@@ -374,7 +374,7 @@ def get_all_material_list():
     amigurumi_material = MaterialList.query.order_by(
         cast(MaterialList.amigurumi_id, Integer).asc(),
         cast(MaterialList.recipe_id, Integer).asc(),
-        MaterialList.material_class.asc()
+        cast(MaterialList.colour_id, Integer).asc()
     ).all()
 
 
