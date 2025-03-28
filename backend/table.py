@@ -27,6 +27,9 @@ class MaterialList(db.Model):
     amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=False)
     material = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.String(50), nullable=False)
+    material_class = db.Column(db.String(100), nullable=False)
+    recipe_id = db.Column(db.Integer, nullable=False)
+    colour_id = db.Column(db.Integer, db.ForeignKey('stitchbook.colour_id'), nullable=False)
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -43,6 +46,7 @@ class Image(db.Model):
     image_route = db.Column(db.String, nullable=True)
     observation = db.Column(db.String, nullable=True)
     main_image = db.Column(db.Boolean, default = False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('material_list.recipe_id'), nullable=False)
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():

@@ -371,7 +371,12 @@ def delete_image_line():
 @app.get('/material_list', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse},
          summary="Requisição para puxar todos os materiais utilizados na construção do amigurumi")
 def get_all_material_list():
-    amigurumi_material = MaterialList.query.all()
+    amigurumi_material = MaterialList.query.order_by(
+        cast(MaterialList.amigurumi_id, Integer).asc(),
+        cast(MaterialList.recipe_id, Integer).asc(),
+        MaterialList.material_class.asc()
+    ).all()
+
 
     result = [
         {key: value for key, value in amigurumi.__dict__.items() if not key.startswith('_')}
