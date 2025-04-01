@@ -1,5 +1,5 @@
 from table import *
-from pydantic import create_model, BaseModel
+from pydantic import create_model, BaseModel, Field
 from typing import Optional
 from sqlalchemy.inspection import inspect
 
@@ -8,16 +8,17 @@ from sqlalchemy.inspection import inspect
 def FoundationList_All(model_class):
     columns = inspect(model_class).c
     annotations = {}
-    
+
     for column in columns:
         column_type = column.type.python_type  
+        description = column.info.get("description", "Campo sem descrição")
         
         if column.nullable:
             column_type = Optional[column_type]  
-            annotations[column.name] = (column_type, None)
+            annotations[column.name] = (column_type, Field(None, description=description))
 
         else:
-            annotations[column.name] = (column_type, ...)
+            annotations[column.name] = (column_type, Field(..., description=description))
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
@@ -26,8 +27,12 @@ FoundationListSchema_All = FoundationList_All(FoundationList)
 
 
 def FoundationList_AmigurumiID(model_class):
+    column = inspect(model_class).c.get("amigurumi_id")
+    column_type = column.type.python_type
+    description = column.info.get("description", "Campo sem descrição")
+
     class FoundationListAmigurumiID(BaseModel):
-        amigurumi_id: int
+        amigurumi_id: column_type = Field(..., description=description)  
         
     return FoundationListAmigurumiID
 
@@ -42,13 +47,14 @@ def MaterialList_All(model_class):
     
     for column in columns:
         column_type = column.type.python_type  
+        description = column.info.get("description", "Campo sem descrição")
         
         if column.nullable:
             column_type = Optional[column_type]  
-            annotations[column.name] = (column_type, None)
+            annotations[column.name] = (column_type, Field(None, description=description))
 
         else:
-            annotations[column.name] = (column_type, ...)
+            annotations[column.name] = (column_type, Field(..., description=description))
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
@@ -57,8 +63,12 @@ MaterialListSchema_All = MaterialList_All(MaterialList)
 
 
 def MaterialList_MaterialID(model_class):
+    column = inspect(model_class).c.get("material_list_id")
+    column_type = column.type.python_type
+    description = column.info.get("description", "Campo sem descrição")
+
     class MaterialListMaterialID(BaseModel):
-        material_list_id: int
+        material_list_id: column_type = Field(..., description=description)  
         
     return MaterialListMaterialID
 
@@ -73,13 +83,14 @@ def Image_All(model_class):
     
     for column in columns:
         column_type = column.type.python_type  
+        description = column.info.get("description", "Campo sem descrição")
         
         if column.nullable:
             column_type = Optional[column_type]  
-            annotations[column.name] = (column_type, None)
+            annotations[column.name] = (column_type, Field(None, description=description))
 
         else:
-            annotations[column.name] = (column_type, ...)
+            annotations[column.name] = (column_type, Field(..., description=description))
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
@@ -88,8 +99,12 @@ ImageSchema_All = Image_All(Image)
 
 
 def Image_ImageID(model_class):
+    column = inspect(model_class).c.get("image_id")
+    column_type = column.type.python_type
+    description = column.info.get("description", "Campo sem descrição")
+
     class ImageImageID(BaseModel):
-        image_id: int
+        image_id: column_type = Field(..., description=description)  
         
     return ImageImageID
 
@@ -104,22 +119,27 @@ def StitchBook_All(model_class):
     
     for column in columns:
         column_type = column.type.python_type  
+        description = column.info.get("description", "Campo sem descrição")
         
         if column.nullable:
             column_type = Optional[column_type]  
-            annotations[column.name] = (column_type, None)
+            annotations[column.name] = (column_type, Field(None, description=description))
 
         else:
-            annotations[column.name] = (column_type, ...)
- 
+            annotations[column.name] = (column_type, Field(..., description=description))
+
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
 StitchBookSchema_All = StitchBook_All(StitchBook)
 
 
 def StitchBook_LineID(model_class):
+    column = inspect(model_class).c.get("line_id")
+    column_type = column.type.python_type
+    description = column.info.get("description", "Campo sem descrição")
+
     class StitchBookLineID(BaseModel):
-        line_id: int
+        line_id: column_type = Field(..., description=description)  
         
     return StitchBookLineID
 
@@ -135,13 +155,14 @@ def StitchBookSequence_All(model_class):
     
     for column in columns:
         column_type = column.type.python_type  
+        description = column.info.get("description", "Campo sem descrição")
         
         if column.nullable:
             column_type = Optional[column_type]  
-            annotations[column.name] = (column_type, None)
+            annotations[column.name] = (column_type, Field(None, description=description))
 
         else:
-            annotations[column.name] = (column_type, ...)
+            annotations[column.name] = (column_type, Field(..., description=description))
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
@@ -150,8 +171,12 @@ StitchBookSequenceSchema_All = StitchBook_All(StitchBookSequence)
 
 
 def StitchBook_ElementID(model_class):
+    column = inspect(model_class).c.get("element_id")
+    column_type = column.type.python_type
+    description = column.info.get("description", "Campo sem descrição")
+
     class StitchBookElementID(BaseModel):
-        element_id: int
+        element_id: column_type = Field(..., description=description)  
         
     return StitchBookElementID
 
