@@ -11,13 +11,13 @@ class FoundationList(db.Model):
     amigurumi_id = db.Column(db.Integer, primary_key=True, autoincrement=True, 
                     info={"description": "chave primária dos amigurumis, usada para relacionar todas as tabelas pelo amigurumi_id e são adicionadas automaticamente pelo código"})
     
-    date = db.Column(db.Date, default=date.today, nullable=False, 
+    date = db.Column(db.Date, default=date.today, nullable=True, 
                     info={"description": "registro da data de cadastramento desse amigurumi, adicionado automaticamente pelo código"})
     
     name = db.Column(db.String(100), nullable=False, 
                     info={"description": "nome dado para o amigurumi, que será utilizado para localiza-lo pelo front"})
     
-    size = db.Column(db.Integer, nullable=False, 
+    size = db.Column(db.Float(), nullable=False, 
                     info={"description": "registro do tamanho do amigurumi em cm"})
     
     autor = db.Column(db.String(100), nullable=False, 
@@ -61,7 +61,7 @@ class MaterialList(db.Model):
     recipe_id = db.Column(db.Integer, nullable=False, 
                     info={"description": "o número da receita, que esse material é referente"})
 
-    colour_id = db.Column(db.Integer, db.ForeignKey('stitchbook.colour_id'), nullable=False, 
+    colour_id = db.Column(db.Integer, db.ForeignKey('stitchbook.colour_id'), nullable=True, 
                     info={"description": "este é um caso exclusivo para as linhas, no qual esse número é para dar match com o colour_id da tabela stitchbook"
                     "para identificação de qual cor, é utilizada para cada carreira"})
 

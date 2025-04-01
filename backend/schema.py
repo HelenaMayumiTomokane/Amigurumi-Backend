@@ -1,11 +1,11 @@
 from table import *
-from pydantic import create_model, BaseModel, Field
+from pydantic import create_model, Field
 from typing import Optional
 from sqlalchemy.inspection import inspect
 
 
-#--------------------------------- Foudation Table ---------------------------------------------#
-def FoundationList_All(model_class):
+#--------------------------------- trazer todas as colunas ---------------------------------------------#
+def bringAllCollumns(model_class):
     columns = inspect(model_class).c
     annotations = {}
 
@@ -22,162 +22,64 @@ def FoundationList_All(model_class):
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
-FoundationListSchema_All = FoundationList_All(FoundationList)
+FoundationListSchema_All = bringAllCollumns(FoundationList)
+MaterialListSchema_All = bringAllCollumns(MaterialList)
+ImageSchema_All = bringAllCollumns(Image)
+StitchBookSchema_All = bringAllCollumns(StitchBook)
+StitchBookSequenceSchema_All = bringAllCollumns(StitchBookSequence)
 
 
 
-def FoundationList_AmigurumiID(model_class):
-    column = inspect(model_class).c.get("amigurumi_id")
-    column_type = column.type.python_type
-    description = column.info.get("description", "Campo sem descrição")
-
-    class FoundationListAmigurumiID(BaseModel):
-        amigurumi_id: column_type = Field(..., description=description)  
-        
-    return FoundationListAmigurumiID
-
-FoundationListSchema_AmigurumiID = FoundationList_AmigurumiID(FoundationList)
-
-
-
-#--------------------------------- Material Table ---------------------------------------------#
-def MaterialList_All(model_class):
+#--------------------------------- trazer tudo menos a chave primária  ---------------------------------------------#
+def bringOnlyNoPrimaryKeyCollumns(model_class):
     columns = inspect(model_class).c
     annotations = {}
-    
-    for column in columns:
-        column_type = column.type.python_type  
-        description = column.info.get("description", "Campo sem descrição")
-        
-        if column.nullable:
-            column_type = Optional[column_type]  
-            annotations[column.name] = (column_type, Field(None, description=description))
 
-        else:
-            annotations[column.name] = (column_type, Field(..., description=description))
+    for column in columns:
+        if not column.primary_key:
+            column_type = column.type.python_type  
+            description = column.info.get("description", "Campo sem descrição")
+            
+            if column.nullable:
+                column_type = Optional[column_type]  
+                annotations[column.name] = (column_type, Field(None, description=description))
+
+            else:
+                annotations[column.name] = (column_type, Field(..., description=description))
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
-MaterialListSchema_All = MaterialList_All(MaterialList)
+FoundationListSchema_No_Auto = bringOnlyNoPrimaryKeyCollumns(FoundationList)
+MaterialListSchema_No_Auto = bringOnlyNoPrimaryKeyCollumns(MaterialList)
+ImageSchema_No_Auto = bringOnlyNoPrimaryKeyCollumns(Image)
+StitchBookSchema_No_Auto = bringOnlyNoPrimaryKeyCollumns(StitchBook)
+StitchBookSequenceSchema_No_Auto = bringOnlyNoPrimaryKeyCollumns(StitchBookSequence)
 
 
 
-def MaterialList_MaterialID(model_class):
-    column = inspect(model_class).c.get("material_list_id")
-    column_type = column.type.python_type
-    description = column.info.get("description", "Campo sem descrição")
-
-    class MaterialListMaterialID(BaseModel):
-        material_list_id: column_type = Field(..., description=description)  
-        
-    return MaterialListMaterialID
-
-MaterialListSchema_MaterialID = MaterialList_MaterialID(MaterialList)
-
-
-
-#--------------------------------- Image Table ---------------------------------------------#
-def Image_All(model_class):
+#--------------------------------- Trazer apenas a chave primária ---------------------------------------------#
+def bringOnlyPrimaryKey(model_class):
     columns = inspect(model_class).c
     annotations = {}
-    
-    for column in columns:
-        column_type = column.type.python_type  
-        description = column.info.get("description", "Campo sem descrição")
-        
-        if column.nullable:
-            column_type = Optional[column_type]  
-            annotations[column.name] = (column_type, Field(None, description=description))
 
-        else:
-            annotations[column.name] = (column_type, Field(..., description=description))
+    for column in columns:
+        if column.primary_key:
+            column_type = column.type.python_type  
+            description = column.info.get("description", "Campo sem descrição")
+            
+            if column.nullable:
+                column_type = Optional[column_type]  
+                annotations[column.name] = (column_type, Field(None, description=description))
+
+            else:
+                annotations[column.name] = (column_type, Field(..., description=description))
  
     return create_model(f"{model_class.__name__}Schema", **annotations)
 
-ImageSchema_All = Image_All(Image)
+FoundationListSchema_AmigurumiID = bringOnlyPrimaryKey(FoundationList)
+MaterialListSchema_MaterialID = bringOnlyPrimaryKey(MaterialList)
+ImageSchema_ImageID = bringOnlyPrimaryKey(Image)
+StitchBookSchema_LineID = bringOnlyPrimaryKey(StitchBook)
+StitchBookSequenceSchema_ElementID = bringOnlyPrimaryKey(StitchBookSequence)
 
 
-
-def Image_ImageID(model_class):
-    column = inspect(model_class).c.get("image_id")
-    column_type = column.type.python_type
-    description = column.info.get("description", "Campo sem descrição")
-
-    class ImageImageID(BaseModel):
-        image_id: column_type = Field(..., description=description)
-        
-    return ImageImageID
-
-ImageSchema_ImageID = Image_ImageID(Image)
-
-
-
-#--------------------------------- StitchBook Table ---------------------------------------------#
-def StitchBook_All(model_class):
-    columns = inspect(model_class).c
-    annotations = {}
-    
-    for column in columns:
-        column_type = column.type.python_type  
-        description = column.info.get("description", "Campo sem descrição")
-        
-        if column.nullable:
-            column_type = Optional[column_type]  
-            annotations[column.name] = (column_type, Field(None, description=description))
-
-        else:
-            annotations[column.name] = (column_type, Field(..., description=description))
-
-    return create_model(f"{model_class.__name__}Schema", **annotations)
-
-StitchBookSchema_All = StitchBook_All(StitchBook)
-
-
-def StitchBook_LineID(model_class):
-    column = inspect(model_class).c.get("line_id")
-    column_type = column.type.python_type
-    description = column.info.get("description", "Campo sem descrição")
-
-    class StitchBookLineID(BaseModel):
-        line_id: column_type = Field(..., description=description)  
-        
-    return StitchBookLineID
-
-StitchBookSchema_LineID = StitchBook_LineID(StitchBook)
-
-
-
-
-#--------------------------------- StitchBook Sequence Table ---------------------------------------------#
-def StitchBookSequence_All(model_class):
-    columns = inspect(model_class).c
-    annotations = {}
-    
-    for column in columns:
-        column_type = column.type.python_type  
-        description = column.info.get("description", "Campo sem descrição")
-        
-        if column.nullable:
-            column_type = Optional[column_type]  
-            annotations[column.name] = (column_type, Field(None, description=description))
-
-        else:
-            annotations[column.name] = (column_type, Field(..., description=description))
- 
-    return create_model(f"{model_class.__name__}Schema", **annotations)
-
-StitchBookSequenceSchema_All = StitchBook_All(StitchBookSequence)
-
-
-
-def StitchBook_ElementID(model_class):
-    column = inspect(model_class).c.get("element_id")
-    column_type = column.type.python_type
-    description = column.info.get("description", "Campo sem descrição")
-
-    class StitchBookElementID(BaseModel):
-        element_id: column_type = Field(..., description=description)  
-        
-    return StitchBookElementID
-
-StitchBookSequenceSchema_ElementID = StitchBook_ElementID(StitchBookSequence)

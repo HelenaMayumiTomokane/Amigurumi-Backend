@@ -8,6 +8,7 @@ from flask_openapi3 import OpenAPI, Info, Tag
 from error_schema import *
 from schema import *
 from sqlalchemy import desc, cast, Integer
+from urllib.parse import unquote
 
 UPLOAD_FOLDER = "backend/bd_image"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -91,16 +92,11 @@ def get_foundation_list():
 
 
 
-@app.post('/foundation_list', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "404":ErrorResponse},
+@app.post('/foundation_list', tags=[foundation_tag], responses={"200": FoundationListSchema_No_Auto, "404":ErrorResponse},
          summary="Requisição para cadastrar um novo amigurumi")
-def add_foundation_list():
-    data = request.get_json()
-    new_amigurumi = FoundationList()
-
-    for key, value in data.items():
-        if hasattr(new_amigurumi, key): 
-            setattr(new_amigurumi, key, value) 
-
+def add_foundation_list(body: FoundationListSchema_No_Auto):
+    data = body.dict() 
+    new_amigurumi = FoundationList(**data)
     db.session.add(new_amigurumi)
     db.session.commit()
 
@@ -114,8 +110,8 @@ def add_foundation_list():
 
 @app.put('/foundation_list/amigurumi_id', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "404":ErrorResponse},
          summary="Requisição para alterar os dados do amigurumi cadastrado")
-def update_foundation_list():
-    data = request.get_json()
+def update_foundation_list(body: FoundationListSchema_All):
+    data = body.dict() 
     amigurumi_id = int(data.get('amigurumi_id'))
     amigurumi = FoundationList.query.get(amigurumi_id)  
 
@@ -138,8 +134,8 @@ def update_foundation_list():
 
 @app.delete('/foundation_list/amigurumi_id', tags=[foundation_tag], responses={"200": FoundationListSchema_AmigurumiID, "404":ErrorResponse},
          summary="Requisição para deletar os dados do amigurumi cadastrado")
-def delete_foundation_list():
-    data = request.get_json()
+def delete_foundation_list(body: FoundationListSchema_AmigurumiID):
+    data = body.dict() 
     amigurumi_id = int(data.get('amigurumi_id'))
     amigurumi = FoundationList.query.get(amigurumi_id) 
 
@@ -186,31 +182,31 @@ def get_all_stichbook():
 
 
 
-@app.post('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404":ErrorResponse},
-         summary="Requisição para cadastradas uma nova linha de receita")
-def add_stichbook():
-    data = request.get_json()
-    amigurumi_id = data.get('amigurumi_id')
+@app.post('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_No_Auto, "404":ErrorResponse},
+         summary="Requisição para cadastrar uma nova linha de receita")
+def add_stichbook(body: StitchBookSchema_No_Auto):
+    data = body.dict() 
+    amigurumi_id = int(data.get('amigurumi_id'))
     amigurumi = FoundationList.query.get(amigurumi_id)
 
     if not amigurumi:
         return jsonify({"error": "Amigurumi não cadastrado"}), 404
 
-    new_receita = StitchBook(**data)
-    db.session.add(new_receita)
+    new_recipe = StitchBook(**data)
+    db.session.add(new_recipe)
     db.session.commit()
 
     return jsonify({
         "message": f"Linha a adicionada com sucesso para o amigurumi {amigurumi.amigurumi_id}!",
-        "line_id": new_receita.line_id,
+        "line_id": new_recipe.line_id,
     })
 
 
 
 @app.put('/stitchbook/line_id', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "404":ErrorResponse},
          summary="Requisição para alterar uma linha de receita cadastrada")
-def update_stichbook_line():
-    data = request.get_json()
+def update_stichbook_line(body: StitchBookSchema_All):
+    data = body.dict() 
     line_id = int(data.get('line_id'))
     lineID = StitchBook.query.get(line_id)  
 
@@ -232,8 +228,8 @@ def update_stichbook_line():
 
 @app.delete('/stitchbook/line_id', tags=[stichbook_tag], responses={"200": StitchBookSchema_LineID, "404":ErrorResponse},
          summary="Requisição para deletar uma linha de receita cadastrada")
-def delete_stichbook_line():
-    data = request.get_json()
+def delete_stichbook_line(body: StitchBookSchema_LineID):
+    data = body.dict() 
     line_id = int(data.get('line_id'))
     lineID = StitchBook.query.get(line_id) 
 
@@ -265,12 +261,11 @@ def get_all_image():
 
 
 
-@app.post('/image', tags=[image_tag], responses={"200": ImageSchema_All, "404": ErrorResponse},
+@app.post('/image', tags=[image_tag], responses={"200": ImageSchema_No_Auto, "404": ErrorResponse},
          summary="Requisição para cadastrar uma nova imagem de um amigurumi")
 def add_image():
-    data = request.form
-    data = data.to_dict()
-    amigurumi_id = data.get("amigurumi_id")
+    data = request.form.to_dict() 
+    amigurumi_id = int(data.get('amigurumi_id'))
     amigurumi = FoundationList.query.get(amigurumi_id)
     main_image = True if str(data.get("main_image")).lower() == "true" else False
     data["main_image"] = main_image    
@@ -309,8 +304,8 @@ def add_image():
 
 @app.put('/image/image_id', tags=[image_tag], responses={"200": ImageSchema_All, "404": ErrorResponse},
          summary="Requisição para alterar informações sobre uma imagem cadastrada de um amigurumi")
-def update_image():
-    data = request.get_json()
+def update_image(body: ImageSchema_All):
+    data = body.dict() 
     image_id = int(data.get('image_id'))
     amigurumi_id = int(data.get('amigurumi_id'))
     main_image = str(data.get("main_image", "false")).lower() == "true"
@@ -339,8 +334,8 @@ def update_image():
 
 @app.delete('/image/image_id', tags=[image_tag], responses={"200": ImageSchema_ImageID, "404":ErrorResponse},
     summary="Requisição para deletar uma imagem cadastrada de um amigurumi")
-def delete_image_line():
-    data = request.get_json()
+def delete_image_line(body: ImageSchema_ImageID):
+    data = body.dict() 
     image_id = int(data.get('image_id'))
     image = Image.query.get(image_id)
 
@@ -387,10 +382,10 @@ def get_all_material_list():
 
 
 
-@app.post('/material_list', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse},
+@app.post('/material_list', tags=[material_tag], responses={"200": MaterialListSchema_No_Auto, "404":ErrorResponse},
          summary="Requisição para cadastrar novos materiais utilizados na construção do amigurumi") 
-def add_material_list():
-    data = request.get_json()
+def add_material_list(body: MaterialListSchema_No_Auto):
+    data = body.dict() 
     amigurumi_id = int(data.get('amigurumi_id'))
     amigurumi = FoundationList.query.get(amigurumi_id)
 
@@ -410,8 +405,8 @@ def add_material_list():
 
 @app.put('/material_list/material_list_id', tags=[material_tag], responses={"200": MaterialListSchema_All, "404":ErrorResponse},
          summary="Requisição para alterar um materiais utilizados na construção do amigurumi")
-def update_material_list_line():
-    data = request.get_json()
+def update_material_list_line(body: MaterialListSchema_All):
+    data = body.dict() 
     material_list_id = int(data.get('material_list_id'))
     materialListID = MaterialList.query.get(material_list_id)  
 
@@ -433,8 +428,8 @@ def update_material_list_line():
 
 @app.delete('/material_list/material_list_id', tags=[material_tag], responses={"200": MaterialListSchema_MaterialID, "404":ErrorResponse},
          summary="Requisição para deletar um materiais utilizados na construção do amigurumi")
-def delete_material_list_line():
-    data = request.get_json()
+def delete_material_list_line(body: MaterialListSchema_MaterialID):
+    data = body.dict() 
     material_list_id = int(data.get('material_list_id'))
     materialListID = MaterialList.query.get(material_list_id) 
 
@@ -470,11 +465,11 @@ def get_all_stichbook_sequence():
 
 
 
-@app.post('/stitchbook_sequence', tags=[stichbook_sequence_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
+@app.post('/stitchbook_sequence', tags=[stichbook_sequence_tag], responses={"200": StitchBookSequenceSchema_No_Auto, "404":ErrorResponse},
          summary="Requisição para cadastrar um novo elemento à um amigurumi")
-def add_stichbook_sequence():
-    data = request.get_json()
-    amigurumi_id = data.get('amigurumi_id')
+def add_stichbook_sequence(body: StitchBookSequenceSchema_No_Auto):
+    data = body.dict() 
+    amigurumi_id = int(data.get('amigurumi_id'))
     amigurumi = FoundationList.query.get(amigurumi_id)
 
     if not amigurumi:
@@ -494,8 +489,8 @@ def add_stichbook_sequence():
 
 @app.put('/stitchbook_sequence/element_id', tags=[stichbook_sequence_tag], responses={"200": StitchBookSequenceSchema_All, "404":ErrorResponse},
          summary="Requisição para alterar um elemento de um amigurumi")
-def update_stichbook_sequence_element():
-    data = request.get_json()
+def update_stichbook_sequence_element(body: StitchBookSequenceSchema_All):
+    data = body.dict() 
     element_id = int(data.get('element_id'))
     elementID = StitchBookSequence.query.get(element_id)  
 
@@ -518,8 +513,8 @@ def update_stichbook_sequence_element():
 
 @app.delete('/stitchbook_sequence/element_id', tags=[stichbook_sequence_tag], responses={"200": StitchBookSequenceSchema_ElementID, "404":ErrorResponse},
          summary="Requisição para deletar um elemento de um amigurumi")
-def delete_stichbook_sequence_elementId():
-    data = request.get_json()
+def delete_stichbook_sequence_elementId(body: StitchBookSequenceSchema_ElementID):
+    data = body.dict() 
     element_id = int(data.get('element_id'))
     elementID = StitchBookSequence.query.get(element_id)  
 
