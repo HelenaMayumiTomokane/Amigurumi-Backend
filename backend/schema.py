@@ -104,7 +104,7 @@ def Image_ImageID(model_class):
     description = column.info.get("description", "Campo sem descrição")
 
     class ImageImageID(BaseModel):
-        image_id: column_type = Field(..., description=description)  
+        image_id: column_type = Field(..., description=description)
         
     return ImageImageID
 

@@ -338,7 +338,7 @@ def update_image():
 
 
 @app.delete('/image/image_id', tags=[image_tag], responses={"200": ImageSchema_ImageID, "404":ErrorResponse},
-         summary="Requisição para deletar uma imagem cadastrada de um amigurumi")
+    summary="Requisição para deletar uma imagem cadastrada de um amigurumi")
 def delete_image_line():
     data = request.get_json()
     image_id = int(data.get('image_id'))
