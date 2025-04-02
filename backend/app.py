@@ -259,21 +259,21 @@ def get_all_image():
 
     return jsonify(results)
 
-
+import base64
 
 @app.post('/image', tags=[image_tag], responses={"200": ImageSchema_No_Auto, "404": ErrorResponse},
          summary="Requisição para cadastrar uma nova imagem de um amigurumi")
-def add_image():
-    data = request.form.to_dict() 
+def add_image(body: ImageSchema_No_Auto):
+    data = body.dict()
     amigurumi_id = int(data.get('amigurumi_id'))
     amigurumi = FoundationList.query.get(amigurumi_id)
-    main_image = True if str(data.get("main_image")).lower() == "true" else False
+    main_image = True if str(data.get('main_image')).lower() == "true" else False
     data["main_image"] = main_image    
 
-    image_route = request.files.get('image_route')
+    image_route = base64.b64decode(data.get('image_route')) 
     if not image_route:
         return jsonify({"error": "Imagem não fornecida"}), 400
-
+    
     if not amigurumi:
         return jsonify({"error": "Amigurumi não encontrado"}), 404
 
@@ -289,7 +289,8 @@ def add_image():
     unique_name = f"image_id_{image_id}.png" 
     file_path = os.path.join(UPLOAD_FOLDER, unique_name)
     
-    image_route.save(file_path)
+    with open(file_path, 'wb') as f:
+        f.write(image_route)
 
     new_image.main_image = main_image
     new_image.image_route = unique_name
@@ -371,7 +372,6 @@ def get_all_material_list():
         cast(MaterialList.recipe_id, Integer).asc(),
         cast(MaterialList.colour_id, Integer).asc()
     ).all()
-
 
     result = [
         {key: value for key, value in amigurumi.__dict__.items() if not key.startswith('_')}

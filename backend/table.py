@@ -84,7 +84,7 @@ class Image(db.Model):
     amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=False, 
                     info={"description": "chave estrangeira, para localização dos dados do amigurumi"})
     
-    image_route = db.Column(db.String, nullable=True, 
+    image_route = db.Column(db.String, nullable=False, 
                     info={"description": "esta informação é gerada automaticamente ao adicionar o arquivo"})
     
     main_image = db.Column(db.Boolean, default = False, 
