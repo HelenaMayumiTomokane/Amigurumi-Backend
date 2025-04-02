@@ -4,7 +4,8 @@ from typing import Optional
 from sqlalchemy.inspection import inspect
 
 
-#--------------------------------- trazer todas as colunas ---------------------------------------------#
+#---------------------------------------------------------------------------#
+# Código padrão para trazer todas as colunas de cada tabela, identificação da sua formatação, descriçao da coluna e obrigatoriedade de preenchimento
 def bringAllCollumns(model_class):
     columns = inspect(model_class).c
     annotations = {}
@@ -20,7 +21,7 @@ def bringAllCollumns(model_class):
         else:
             annotations[column.name] = (column_type, Field(..., description=description))
  
-    return create_model(f"{model_class.__name__}Schema", **annotations)
+    return create_model(f"{model_class.__name__}Schema_All", **annotations)
 
 FoundationListSchema_All = bringAllCollumns(FoundationList)
 MaterialListSchema_All = bringAllCollumns(MaterialList)
@@ -29,8 +30,9 @@ StitchBookSchema_All = bringAllCollumns(StitchBook)
 StitchBookSequenceSchema_All = bringAllCollumns(StitchBookSequence)
 
 
-
-#--------------------------------- trazer tudo menos a chave primária  ---------------------------------------------#
+#---------------------------------------------------------------------------#
+# Código padrão para trazer todas as colunas de cada tabela, com excessão das colunas de chave principal, identificação da sua formatação, 
+# descriçao da coluna e obrigatoriedade de preenchimento
 def bringOnlyNoPrimaryKeyCollumns(model_class):
     columns = inspect(model_class).c
     annotations = {}
@@ -47,7 +49,7 @@ def bringOnlyNoPrimaryKeyCollumns(model_class):
             else:
                 annotations[column.name] = (column_type, Field(..., description=description))
  
-    return create_model(f"{model_class.__name__}Schema", **annotations)
+    return create_model(f"{model_class.__name__}Schema_No_Auto", **annotations)
 
 FoundationListSchema_No_Auto = bringOnlyNoPrimaryKeyCollumns(FoundationList)
 MaterialListSchema_No_Auto = bringOnlyNoPrimaryKeyCollumns(MaterialList)
@@ -57,7 +59,8 @@ StitchBookSequenceSchema_No_Auto = bringOnlyNoPrimaryKeyCollumns(StitchBookSeque
 
 
 
-#--------------------------------- Trazer apenas a chave primária ---------------------------------------------#
+#---------------------------------------------------------------------------#
+# Código padrão para trazer apenas as colunas de chave principal, identificação da sua formatação, descriçao da coluna e obrigatoriedade de preenchimento
 def bringOnlyPrimaryKey(model_class):
     columns = inspect(model_class).c
     annotations = {}
@@ -74,12 +77,12 @@ def bringOnlyPrimaryKey(model_class):
             else:
                 annotations[column.name] = (column_type, Field(..., description=description))
  
-    return create_model(f"{model_class.__name__}Schema", **annotations)
+    return create_model(f"{model_class.__name__}Schema_PrimaryKey", **annotations)
 
-FoundationListSchema_AmigurumiID = bringOnlyPrimaryKey(FoundationList)
-MaterialListSchema_MaterialID = bringOnlyPrimaryKey(MaterialList)
-ImageSchema_ImageID = bringOnlyPrimaryKey(Image)
-StitchBookSchema_LineID = bringOnlyPrimaryKey(StitchBook)
-StitchBookSequenceSchema_ElementID = bringOnlyPrimaryKey(StitchBookSequence)
+FoundationListSchema_PrimaryKey = bringOnlyPrimaryKey(FoundationList)
+MaterialListSchema_PrimaryKey = bringOnlyPrimaryKey(MaterialList)
+ImageSchema_PrimaryKey = bringOnlyPrimaryKey(Image)
+StitchBookSchema_PrimaryKey = bringOnlyPrimaryKey(StitchBook)
+StitchBookSequenceSchema_PrimaryKey = bringOnlyPrimaryKey(StitchBookSequence)
 
 
