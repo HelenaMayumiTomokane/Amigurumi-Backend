@@ -26,8 +26,8 @@ class FoundationList(db.Model):
     link = db.Column(db.String(), 
                     info={"description": "link da receita original"})
     
-    amigurumi_id_of_linked_amigurumi = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id', ondelete="SET NULL"), nullable=True, 
-                    info={"description": "id do amigurumi principal, no qual esta receita está relacionada"})
+    relationship = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id', ondelete="SET NULL"), nullable=True, 
+                    info={"description": "preencher com o id do amigurumi principal, no qual esta receita está relacionada"})
     
 
     #declaração de relacionamento
@@ -69,6 +69,9 @@ class MaterialList(db.Model):
 
     colour_id = db.Column(db.Integer, db.ForeignKey('stitchbook.colour_id'), nullable=True, 
                     info={"description": "chave estrangeira, exclusiva para as linhas de amigurumi, para idenificação das cores"})
+    
+    #declaração de relacionamento
+    image = db.relationship("Image", backref="recipe", cascade="all, delete-orphan", lazy=True)
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -131,6 +134,10 @@ class StitchBook(db.Model):
     
     stich_sequence = db.Column(db.String, nullable=False, 
                     info={"description": "pontos utilizados na carreira"})
+    
+    #declaração de relacionamento
+    material_list = db.relationship("MaterialList", backref="colour", cascade="all, delete-orphan", lazy=True)
+
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -159,6 +166,9 @@ class StitchBookSequence(db.Model):
     
     repetition = db.Column(db.Integer, nullable=False, 
                     info={"description": "quantidade de cada parte"})
+    
+    #declaração de relacionamento
+    stitchbook = db.relationship("StitchBook", backref="element", cascade="all, delete-orphan", lazy=True)
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
