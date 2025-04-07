@@ -28,9 +28,6 @@ class FoundationList(db.Model):
     
     amigurumi_id_of_linked_amigurumi = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=True, 
                     info={"description": "id do amigurumi principal, no qual esta receita está relacionada"})
-    
-    obs = db.Column(db.String(), 
-                    info={"description": "comentários sobre o amigurumi"})
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
