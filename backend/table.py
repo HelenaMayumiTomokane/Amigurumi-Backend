@@ -26,8 +26,17 @@ class FoundationList(db.Model):
     link = db.Column(db.String(), 
                     info={"description": "link da receita original"})
     
-    amigurumi_id_of_linked_amigurumi = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=True, 
+    amigurumi_id_of_linked_amigurumi = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id', ondelete="SET NULL"), nullable=True, 
                     info={"description": "id do amigurumi principal, no qual esta receita está relacionada"})
+    
+
+    #declaração de relacionamento
+    linked_amigurumi = db.relationship('FoundationList', backref=db.backref('related_amigurumis', lazy=True), remote_side=[amigurumi_id], single_parent=True)
+    materials = db.relationship("MaterialList", backref="amigurumi", cascade="all, delete-orphan", lazy=True)
+    image = db.relationship("Image", backref="amigurumi", cascade="all, delete-orphan", lazy=True)
+    stitchBook = db.relationship("StitchBook", backref="amigurumi", cascade="all, delete-orphan", lazy=True)
+    stitchBook_sequence = db.relationship("StitchBookSequence", backref="amigurumi", cascade="all, delete-orphan", lazy=True)
+
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -46,7 +55,7 @@ class MaterialList(db.Model):
     material_list_id = db.Column(db.Integer, primary_key=True, autoincrement=True, 
                     info={"description": "chave primária dos materiais"})
 
-    amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=False, 
+    amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id', ondelete='CASCADE'), nullable=False, 
                     info={"description": "chave estrangeira, para indicação do amigurumi"})
     
     material_name = db.Column(db.String(100), nullable=False, 
@@ -77,7 +86,7 @@ class Image(db.Model):
     image_id = db.Column(db.Integer, primary_key=True, autoincrement=True, 
                     info={"description": "chave primária das imagens"})
     
-    amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=False, 
+    amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id', ondelete='CASCADE'), nullable=False, 
                     info={"description": "chave estrangeira, para indicação do amigurumi"})
     
     main_image = db.Column(db.Boolean, default = False, 
@@ -105,7 +114,7 @@ class StitchBook(db.Model):
     line_id = db.Column(db.Integer, primary_key=True, autoincrement=True, 
                     info={"description": "chave primária das carreiras"})
     
-    amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=False, 
+    amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id', ondelete='CASCADE'), nullable=False, 
                     info={"description": "chave estrangeira, para indicação do amigurumi"})
     
     observation = db.Column(db.String, nullable=False, 
@@ -139,7 +148,7 @@ class StitchBookSequence(db.Model):
     element_id = db.Column(db.Integer, primary_key=True, autoincrement=True, 
                     info={"description": "chave primária, das partes dos amigurumis"})
     
-    amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id'), nullable=False, 
+    amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id', ondelete='CASCADE'), nullable=False, 
                     info={"description": "chave estrangeira, para indicação do amigurumi"})
     
     element_order = db.Column(db.Integer, nullable=False, 
