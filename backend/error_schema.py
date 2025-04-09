@@ -3,6 +3,7 @@ from pydantic import BaseModel, ValidationError, Field
 from flask import jsonify
 from typing import List, Union
 
+#declaração dos campos de erros
 class FieldError(BaseModel):
     loc: List[Union[str, int]] = Field(..., description="Localização do campo com erro")
     msg: str = Field(..., description="Mensagem descritiva do erro")
@@ -12,6 +13,8 @@ class FieldError(BaseModel):
 class ValidationErrorResponse(BaseModel):
     detail: List[FieldError] = Field(..., description="Lista de erros de validação")
 
+
+#requisição da mensagem de erro
 def register_validation_error_handler(app):
     @app.errorhandler(ValidationError)
     def handle_validation_error(e):

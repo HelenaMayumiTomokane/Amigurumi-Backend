@@ -4,8 +4,8 @@
 
 ## 📌 Funcionalidades
 
-- 📖 Criar, listar e buscar receitas de amigurumi.
-- 📦 Upload e exibição de imagens dos amigurumis e das receitas.
+- 📖 Criar, listar e buscar dados de amigurumis.
+- 📦 Upload e exibição de imagens e dados dos amigurumis.
 - 📊 Organização das receitas, imagens, materiais etc por ID.
 
 ## 🛠️ Tecnologias Utilizadas

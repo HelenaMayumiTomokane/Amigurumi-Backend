@@ -60,7 +60,7 @@ StitchBookSequenceSchema_No_Auto = bringOnlyNoPrimaryKeyCollumns(StitchBookSeque
 
 
 #---------------------------------------------------------------------------#
-# Código padrão para trazer apenas as colunas de chave principal, identificação da sua formatação, descriçao da coluna e obrigatoriedade de preenchimento
+# Código padrão para trazer apenas a coluna de chave principal, identificação da sua formatação, descriçao da coluna e obrigatoriedade de preenchimento
 def bringOnlyPrimaryKey(model_class):
     columns = inspect(model_class).c
     annotations = {}

@@ -1,3 +1,4 @@
+#aba dedicada ao acionamento do backend
 from app import app
 
 if __name__ == '__main__':

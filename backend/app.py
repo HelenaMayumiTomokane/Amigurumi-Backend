@@ -1,4 +1,4 @@
-from flask import request, jsonify, render_template, redirect, send_from_directory
+from flask import request, jsonify, render_template, redirect
 from flask_cors import CORS
 from flask_openapi3 import OpenAPI, Info, Tag
 from sqlalchemy import desc, cast, Integer
@@ -27,12 +27,15 @@ CORS(app)
 
 db.init_app(app)
 
-with app.app_context(): #Criação das tabelas automaticamente
+#criação das tabelas automaticamente
+with app.app_context(): 
     db.create_all() 
 
 register_validation_error_handler(app)
+
 #----------------------------------- API Suporte ------------------------------#
-@app.get('/<page>', tags=[support_tag]) 
+#renderização de novas abas
+@app.get('/<page>', tags=[support_tag])  
 def render_page(page):
     try:
         return render_template(f'{page}.html')
@@ -40,8 +43,8 @@ def render_page(page):
         return "Página não encontrada", 404
 
 
-
-@app.get('/openapi', tags=[support_tag]) # API Swagger
+#Geração do OpenApi
+@app.get('/openapi', tags=[support_tag])
 def openapi():
     doc_type = request.args.get('doc', 'swagger') 
 
@@ -66,9 +69,7 @@ def openapi():
 
 
 
-
-
-#-----------------------------------API Foundation List Table----------#
+#----------------------------------- API para a tabela Foundation List----------#
 @app.get('/foundation_list', tags=[foundation_tag], responses={"200": FoundationListSchema_All, "422": ValidationErrorResponse},
          summary="Requisição para puxar todos os amigurumis cadastrados")
 def get_foundation_list():
@@ -148,7 +149,7 @@ def delete_foundation_list(body: FoundationListSchema_PrimaryKey):
 
 
 
-#-----------------------------------API StichBook Table------------------------#
+#----------------------------------- API para a tabela StichBook ------------------------#
 @app.get('/stitchbook', tags=[stichbook_tag], responses={"200": StitchBookSchema_All, "422": ValidationErrorResponse},
          summary="Requisição para puxar todas as linhas de receitas cadastradas")
 def get_all_stichbook():
@@ -206,7 +207,7 @@ def update_stichbook_line(body: StitchBookSchema_All):
     lineID = StitchBook.query.get(line_id)  
 
     if not lineID:
-        return jsonify({"error": "Amigurumi não encontrado"}), 404
+        return jsonify({"error": "Linha não encontrada"}), 404
 
     for key, value in data.items():
         if hasattr(lineID, key):
@@ -229,7 +230,7 @@ def delete_stichbook_line(body: StitchBookSchema_PrimaryKey):
     lineID = StitchBook.query.get(line_id) 
 
     if not lineID:
-        return jsonify({"error": "Amigurumi não encontrado"}), 404
+        return jsonify({"error": "Linha não encontrada"}), 404
 
     db.session.delete(lineID) 
     db.session.commit() 
@@ -241,7 +242,7 @@ def delete_stichbook_line(body: StitchBookSchema_PrimaryKey):
 
 
 
-#-----------------------------------API Image Table -------------------#
+#----------------------------------- API para a tabela Image -------------------#
 @app.get('/image', tags=[image_tag], responses={"200": ImageSchema_All, "422": ValidationErrorResponse},
          summary="Requisição para puxar todas as imagens dos amigurumis cadastrados")
 def get_all_image():
@@ -329,19 +330,19 @@ def delete_image_line(body: ImageSchema_PrimaryKey):
     db.session.commit()
 
     return jsonify({
-        "message": f"Imagem com ID {image_id} removida com sucesso!",
+        "message": f"Imagem {image_id} removida com sucesso!",
         "image_id": image_id,
     })
 
 
 
-#-----------------------------------API Material Table------------------#
+#----------------------------------- API para a tabela Material ------------------#
 @app.get('/material_list', tags=[material_tag], responses={"200": MaterialListSchema_All, "422": ValidationErrorResponse},
          summary="Requisição para puxar todos os materiais utilizados na construção do amigurumi")
 def get_all_material_list():
     amigurumi_material = MaterialList.query.order_by(
         cast(MaterialList.amigurumi_id, Integer).asc(),
-        cast(MaterialList.recipe_id, Integer).asc(),
+        cast(MaterialList.list_id, Integer).asc(),
         cast(MaterialList.colour_id, Integer).asc()
     ).all()
 
@@ -370,17 +371,17 @@ def add_material_list(body: MaterialListSchema_No_Auto):
 
     return jsonify({
         "message": f"Amigurumi {new_material_list.amigurumi_id} adicionado com sucesso!",
-        "material_list_id": new_material_list.material_list_id,
+        "material_id": new_material_list.material_id,
     })
 
 
 
-@app.put('/material_list/material_list_id', tags=[material_tag], responses={"200": MaterialListSchema_All, "422": ValidationErrorResponse},
+@app.put('/material_list/material_id', tags=[material_tag], responses={"200": MaterialListSchema_All, "422": ValidationErrorResponse},
          summary="Requisição para alterar um materiais utilizados na construção do amigurumi")
 def update_material_list_line(body: MaterialListSchema_All):
     data = body.dict() 
-    material_list_id = int(data.get('material_list_id'))
-    materialListID = MaterialList.query.get(material_list_id)  
+    material_id = int(data.get('material_id'))
+    materialListID = MaterialList.query.get(material_id)  
 
     if not materialListID:
         return jsonify({"error": "Material não encontrado"}), 404
@@ -392,18 +393,18 @@ def update_material_list_line(body: MaterialListSchema_All):
     db.session.commit()
 
     return jsonify({
-        "message": f"Material {material_list_id} atualizado com sucesso!",
-        "material_list_id": material_list_id,
+        "message": f"Material {material_id} atualizado com sucesso!",
+        "material_id": material_id,
     })
 
 
 
-@app.delete('/material_list/material_list_id', tags=[material_tag], responses={"200": MaterialListSchema_PrimaryKey, "422": ValidationErrorResponse},
+@app.delete('/material_list/material_id', tags=[material_tag], responses={"200": MaterialListSchema_PrimaryKey, "422": ValidationErrorResponse},
          summary="Requisição para deletar um materiais utilizados na construção do amigurumi")
 def delete_material_list_line(body: MaterialListSchema_PrimaryKey):
     data = body.dict() 
-    material_list_id = int(data.get('material_list_id'))
-    materialListID = MaterialList.query.get(material_list_id) 
+    material_id = int(data.get('material_id'))
+    materialListID = MaterialList.query.get(material_id) 
 
     if not materialListID:
         return jsonify({"error": "Material não encontrado"}), 404
@@ -412,16 +413,16 @@ def delete_material_list_line(body: MaterialListSchema_PrimaryKey):
     db.session.commit() 
 
     return jsonify({
-        "message": f"Material {material_list_id} foi removido com sucesso!",
-        "material_list_id": material_list_id,
+        "message": f"Material {material_id} foi removido com sucesso!",
+        "material_id": material_id,
     })
 
 
 
 
-#-----------------------------------API StichBook Sequence Table------------------------#
+#----------------------------------- API para a tabela StichBook Sequence ------------------------#
 @app.get('/stitchbook_sequence', tags=[stichbook_sequence_tag], responses={"200": StitchBookSequenceSchema_All, "422": ValidationErrorResponse},
-         summary="Requisição para puxar todas as partes cadastrados dos amigurumis")
+         summary="Requisição para puxar todas as partes cadastradas dos amigurumis")
 def get_all_stichbook_sequence():
     amigurumi_stiches = StitchBookSequence.query.order_by(
         cast(StitchBookSequence.amigurumi_id, Integer).asc(),

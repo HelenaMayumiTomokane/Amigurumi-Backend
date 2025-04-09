@@ -52,7 +52,7 @@ class MaterialList(db.Model):
     """
     __tablename__ = 'material_list'
 
-    material_list_id = db.Column(db.Integer, primary_key=True, autoincrement=True, 
+    material_id = db.Column(db.Integer, primary_key=True, autoincrement=True, 
                     info={"description": "chave primária dos materiais"})
 
     amigurumi_id = db.Column(db.Integer, db.ForeignKey('foundation_list.amigurumi_id', ondelete='CASCADE'), nullable=False, 
@@ -64,11 +64,11 @@ class MaterialList(db.Model):
     quantity = db.Column(db.String(50), nullable=False, 
                     info={"description": "quantidade de material utilizado"})
 
-    recipe_id = db.Column(db.Integer, nullable=False, 
-                    info={"description": "define o conjunto de materiais utilizados"})
+    list_id = db.Column(db.Integer, nullable=False, 
+                    info={"description": "id do conjunto de materiais utilizados por receita"})
 
     colour_id = db.Column(db.Integer, db.ForeignKey('stitchbook.colour_id'), nullable=True, 
-                    info={"description": "chave estrangeira, exclusiva para as linhas de amigurumi, para idenificação das cores"})
+                    info={"description": "chave estrangeira, exclusiva para as linhas de amigurumi, para identificação das cores"})
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -79,7 +79,7 @@ class MaterialList(db.Model):
 
 class Image(db.Model):
     """
-    A tabela Image é destinada para controle das imagens relacionadas as amigurumis
+    A tabela Image é destinada para armazenamento das imagens relacionadas aos amigurumis
     """
     __tablename__ = 'image'
 
@@ -90,10 +90,10 @@ class Image(db.Model):
                     info={"description": "chave estrangeira, para indicação do amigurumi"})
     
     main_image = db.Column(db.Boolean, default = False, 
-                    info={"description": "ordenação das imagens, sendo TRUE como sendo a primeira"})
+                    info={"description": "declaração da imagem principal, sendo True, como a principal"})
 
-    recipe_id = db.Column(db.Integer, db.ForeignKey('material_list.recipe_id'), nullable=False, 
-                    info={"description": "chave estrangeira, para identificação da receita"})
+    list_id = db.Column(db.Integer, db.ForeignKey('material_list.list_id'), nullable=False, 
+                    info={"description": "chave estrangeira, para identificação da lista de materiais"})
     
     image_base64 = db.Column(db.String, nullable=False, 
                     info={"description": "imagem criptografada em base64"})
@@ -107,7 +107,7 @@ class Image(db.Model):
 
 class StitchBook(db.Model):
     """
-    A tabela Stitchbook é destinada para controle todas as receitas dos amigurumis
+    A tabela Stitchbook é destinada para armazenar todas as receitas dos amigurumis
     """
     __tablename__ = 'stitchbook'
 
@@ -127,7 +127,7 @@ class StitchBook(db.Model):
                     info={"description": "sequência das carreiras"})
     
     colour_id = db.Column(db.Integer, nullable=False, 
-                    info={"description": "cor utilizada na carreira"})
+                    info={"description": "id da cor utilizada na carreira"})
     
     stich_sequence = db.Column(db.String, nullable=False, 
                     info={"description": "pontos utilizados na carreira"})
